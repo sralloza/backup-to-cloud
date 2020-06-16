@@ -5,7 +5,7 @@ from typing import Union
 
 from googleapiclient.http import MediaIoBaseUpload
 
-from utils import get_google_drive_services, get_mimetype, log
+from .utils import get_google_drive_services, get_mimetype, log
 
 FileData = Union[Path, str, BytesIO]
 

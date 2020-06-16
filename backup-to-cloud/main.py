@@ -6,9 +6,9 @@ from io import BytesIO
 from pathlib import Path
 from zipfile import ZipFile
 
-from settings import EntryType, get_settings
-from upload import backup
-from utils import list_files, log
+from .settings import EntryType, get_settings
+from .upload import backup
+from .utils import list_files, log
 
 
 def _main():
