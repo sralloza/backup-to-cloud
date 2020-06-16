@@ -1,7 +1,9 @@
 from datetime import datetime
 import mimetypes
+import os
 from pathlib import Path
 import pickle
+import re
 
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -65,5 +67,15 @@ def get_mimetype(filename: str) -> str:
     return mimetypes.guess_type(filename)[0] or "application/octet-stream"
 
 
-def list_files(regex):
-    real_regex = Path(regex)
+def list_files(root_path, regex_filter):
+    root_path = Path(root_path).absolute()
+    pattern = re.compile(regex_filter, re.IGNORECASE)
+    files = []
+
+    for root, _, temp_files in os.walk(root_path.as_posix()):
+        for file in temp_files:
+            filepath = Path(root).joinpath(file)
+            if pattern.search(filepath.as_posix()):
+                files.append(filepath)
+
+    return files

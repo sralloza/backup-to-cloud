@@ -6,7 +6,7 @@ from zipfile import ZipFile
 
 from settings import EntryType, get_settings
 from upload import backup
-from utils import log
+from utils import list_files, log
 
 
 def main():
@@ -18,13 +18,13 @@ def main():
             continue
         if entry.type == EntryType.multiple_files:
             if not entry.zip:
-                files = glob(entry.path)
+                files = list_files(entry.root_path, entry.filter)
                 for file in files:
                     backup(file, entry.folder)
                 continue
 
             buffer = BytesIO()
-            files = glob(entry.path)
+            files = list_files(entry.root_path, entry.filter)
 
             min_file = min(files)
             max_file = max(files)
