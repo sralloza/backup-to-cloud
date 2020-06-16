@@ -1,19 +1,17 @@
 from enum import Enum
-from pathlib import Path
-from typing import Type
 
 from ruamel.yaml import YAML
 
 
 class EntryType(Enum):
-    folder = "d"
-    file = "-"
+    multiple_files = "multiple-files"
+    singple_file = "single-file"
 
 
 class BackupEntry:
     def __init__(self, name, type, path, cloud_folder_id=None, zip=False, zipname=None):
         self.name = name
-        self.type = EntryType[type]
+        self.type = EntryType(type)
         self.path = path
         self.folder = cloud_folder_id
         self.zip = zip
