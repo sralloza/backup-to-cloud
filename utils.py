@@ -1,4 +1,3 @@
-
 from datetime import datetime
 import mimetypes
 from pathlib import Path
@@ -8,8 +7,9 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from paths import CREDENTIALS_PATH, LOG_PATH, SCOPES, TOKEN_PATH
+from paths import CREDENTIALS_PATH, LOG_PATH, TOKEN_PATH
 
+SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 
 class TokenError(Exception):
@@ -22,8 +22,6 @@ def log(template, *args):
     message = template % args
     with LOG_PATH.open("at", encoding="utf-8") as file_handler:
         file_handler.write(time_str + message + "\n")
-
-
 
 
 def gen_token(creds):
@@ -40,6 +38,7 @@ def get_google_drive_services(creds=None):
         creds = get_creds_from_token()
 
     return build("drive", "v3", credentials=creds)
+
 
 def get_creds_from_token():
     if not TOKEN_PATH.exists():
@@ -64,6 +63,7 @@ def get_creds_from_token():
 
 def get_mimetype(filename: str) -> str:
     return mimetypes.guess_type(filename)[0] or "application/octet-stream"
+
 
 def list_files(regex):
     real_regex = Path(regex)
