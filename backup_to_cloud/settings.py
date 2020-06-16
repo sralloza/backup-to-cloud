@@ -3,8 +3,8 @@ from typing import Dict
 
 from ruamel.yaml import YAML
 
-from paths import SETTINGS_PATH
-from utils import log
+from .paths import SETTINGS_PATH
+from .utils import log
 
 
 class EntryType(Enum):
