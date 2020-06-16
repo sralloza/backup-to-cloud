@@ -10,7 +10,7 @@ from .utils import get_google_drive_services, get_mimetype, log
 FileData = Union[Path, str, BytesIO]
 
 
-def backup(file_data: FileData, folder=None, filename=None):
+def backup(file_data: FileData, mimetype, folder=None, filename=None):
     if isinstance(file_data, (str, Path)):
         filepath = Path(file_data)
         if not filepath.exists():
@@ -21,7 +21,6 @@ def backup(file_data: FileData, folder=None, filename=None):
         del filepath
 
     service = get_google_drive_services()
-    mimetype = mimetypes.guess_type(filename)[0]
     file_metadata = {"name": filename, "mimeType": mimetype}
     query = "name = %r" % (filename)
 
@@ -36,13 +35,12 @@ def backup(file_data: FileData, folder=None, filename=None):
         raise RuntimeError("Files should not be more than one")
 
     if ids:
-        return save_version(service, file_data, ids[0], filename)
-    return save_new_file(service, file_data, folder, filename)
+        return save_version(service, file_data, mimetype, ids[0], filename)
+    return save_new_file(service, file_data, mimetype, folder, filename)
 
 
-def save_new_file(gds, file_data: BytesIO, folder=None, filename=None):
+def save_new_file(gds, file_data: BytesIO, mimetype, folder=None, filename=None):
     log("saving new file: %s", filename)
-    mimetype = get_mimetype(filename)
     file_metadata = {"name": filename, "mimeType": mimetype}
 
     if folder:
@@ -55,13 +53,12 @@ def save_new_file(gds, file_data: BytesIO, folder=None, filename=None):
     return res
 
 
-def save_version(gds, file_data: BytesIO, file_id: str, filename=None):
+def save_version(gds, file_data: BytesIO, mimetype, file_id: str, filename=None):
     log("saving new version of %s", filename)
     file_metadata = {
         "name": filename,
         "published": True,
     }
-    mimetype = get_mimetype(filename)
     media = MediaIoBaseUpload(file_data, mimetype=mimetype)
     response = (
         gds.files()

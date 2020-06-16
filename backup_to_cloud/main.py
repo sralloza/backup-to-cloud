@@ -8,7 +8,7 @@ from zipfile import ZipFile
 
 from .settings import EntryType, get_settings
 from .upload import backup
-from .utils import list_files, log
+from .utils import get_mimetype, list_files, log, ZIP_MIMETYPE
 
 
 def _main():
@@ -22,7 +22,8 @@ def _main():
             if not entry.zip:
                 files = list_files(entry.root_path, entry.filter)
                 for file in files:
-                    backup(file, entry.folder)
+                    mimetype = get_mimetype(file)
+                    backup(file, mimetype, entry.folder)
                 continue
 
             buffer = BytesIO()
@@ -47,10 +48,11 @@ def _main():
                 for file in files:
                     myzip.write(file, Path(file).relative_to(min_file))
 
-            backup(buffer, entry.folder, filename=entry.zipname)
+            backup(buffer, ZIP_MIMETYPE, entry.folder, filename=entry.zipname)
 
         elif entry.type == EntryType.single_file:
-            backup(entry.root_path, entry.folder)
+            mimetype = get_mimetype(entry.root_path)
+            backup(entry.root_path,mimetype, entry.folder)
 
 
 def main():

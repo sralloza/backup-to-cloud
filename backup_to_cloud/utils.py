@@ -12,6 +12,7 @@ from googleapiclient.discovery import build
 from .paths import CREDENTIALS_PATH, LOG_PATH, TOKEN_PATH
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
+ZIP_MIMETYPE = "application/octet-stream"
 
 
 class TokenError(Exception):
@@ -63,8 +64,21 @@ def get_creds_from_token():
     return creds
 
 
-def get_mimetype(filename: str) -> str:
-    return mimetypes.guess_type(filename)[0] or "application/octet-stream"
+def get_mimetype(filepath: str) -> str:
+    mimetype = mimetypes.guess_type(filepath)[0]
+    if mimetype:
+        return mimetype
+
+    data = Path(filepath).read_bytes()
+    try:
+        data.decode()
+    except UnicodeDecodeError:
+        try:
+            data.decode("utf-8")
+        except UnicodeDecodeError:
+            return "application/octet-stream"
+
+    return "text/plain"
 
 
 def list_files(root_path, regex_filter):
