@@ -105,6 +105,9 @@ def main():
     settings = get_settings(SETTINGS_PATH)[:-1]
 
     for entry in settings:
+        if entry.path is None:
+            log("Excluding entry %r", entry.name)
+            continue
         if entry.type == EntryType.folder:
             if not entry.zip:
                 files = glob(entry.path)
