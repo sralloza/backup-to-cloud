@@ -10,12 +10,13 @@ class EntryType(Enum):
 
 
 class BackupEntry:
-    def __init__(self, name, type, path, cloud_folder_id=None, zip=False):
+    def __init__(self, name, type, path, cloud_folder_id=None, zip=False, zipname=None):
         self.name = name
         self.type = EntryType[type]
         self.path = path
         self.folder = cloud_folder_id
         self.zip = zip
+        self.zipname = zipname
 
     def __repr__(self):
         return vars(self).__repr__()
