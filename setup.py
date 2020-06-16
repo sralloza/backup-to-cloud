@@ -1,3 +1,9 @@
 from setuptools import find_packages, setup
+import versioneer
 
-setup(name="backup-to-cloud", version="0.1", packages=find_packages())
+setup(
+    name="backup-to-cloud",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
+    packages=find_packages(),
+)
