@@ -1,5 +1,9 @@
 from setuptools import find_packages, setup
 import versioneer
+from pathlib import Path
+
+requirements = Path("requirements.txt").read_text().splitlines()
+
 
 setup(
     name="backup-to-cloud",
@@ -12,4 +16,5 @@ setup(
             "btc=backup_to_cloud.main:main",
         ],
     },
+    install_requires=requirements
 )
