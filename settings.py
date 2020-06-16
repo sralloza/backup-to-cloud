@@ -1,5 +1,6 @@
 from enum import Enum
 from pathlib import Path
+from typing import Type
 
 from ruamel.yaml import YAML
 
@@ -24,4 +25,10 @@ class BackupEntry:
 
 def get_settings(settings_path):
     settings_dict = YAML(typ="safe").load(settings_path.read_text())
-    return [BackupEntry(name=k, **v) for k, v in settings_dict.items()]
+    try:
+        return [BackupEntry(name=k, **v) for k, v in settings_dict.items()]
+    except TypeError as exc:
+        from start import log
+
+        log(str(exc))
+        raise exc
