@@ -26,6 +26,12 @@ def main():
             buffer = BytesIO()
             files = list_files(entry.root_path, entry.filter)
 
+            if not files:
+                raise RuntimeError(
+                    "Not files found for entry %r (path=%r, filter=%r)"
+                    % (entry.name, entry.root_path, entry.filter)
+                )
+
             min_file = min(files)
             max_file = max(files)
             while True:
