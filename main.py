@@ -1,3 +1,5 @@
+import argparse
+import sys
 from datetime import datetime
 from glob import glob
 from io import BytesIO
@@ -9,7 +11,7 @@ from upload import backup
 from utils import list_files, log
 
 
-def main():
+def _main():
     settings = get_settings()
 
     for entry in settings:
@@ -49,6 +51,27 @@ def main():
 
         elif entry.type == EntryType.single_file:
             backup(entry.root_path, entry.folder)
+
+
+def main():
+    args = vars(parse_args())
+    if args["command"] == "check-regex":
+        files = list_files(args["root-path"], args["regex"])
+        for file in files:
+            print(file)
+        sys.exit(0)
+
+    else:
+        _main()
+
+
+def parse_args():
+    parser = argparse.ArgumentParser("backup-to-cloud")
+    subparsers = parser.add_subparsers(dest="command")
+    check_regex_parser = subparsers.add_parser("check-regex")
+    check_regex_parser.add_argument("root-path")
+    check_regex_parser.add_argument("regex", default=".", nargs="?")
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
