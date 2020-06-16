@@ -1,9 +1,9 @@
+from datetime import datetime
 from glob import glob
 from io import BytesIO
 import mimetypes
 from pathlib import Path
 import pickle
-from time import asctime
 from zipfile import ZipFile
 
 from google.auth.transport.requests import Request
@@ -23,7 +23,8 @@ TOKEN_PATH = Path(__file__).with_name("token.pickle")
 
 
 def log(template, *args):
-    time_str = f"[{asctime()}] "
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    time_str = f"[{now}] "
     message = template % args
     with LOG_PATH.open("at", encoding="utf-8") as file_handler:
         file_handler.write(time_str + message + "\n")
