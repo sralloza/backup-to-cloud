@@ -43,7 +43,7 @@ def get_config():
     cfg.style = "pep440"
     cfg.tag_prefix = "v"
     cfg.parentdir_prefix = "backup-to-cloud-"
-    cfg.versionfile_source = "backup-to-cloud/_version.py"
+    cfg.versionfile_source = "backup_to_cloud/_version.py"
     cfg.verbose = False
     return cfg
 

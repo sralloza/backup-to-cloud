@@ -1,2 +1,2 @@
 include versioneer.py
-include backup-to-cloud/_version.py
+include backup_to_cloud/_version.py
