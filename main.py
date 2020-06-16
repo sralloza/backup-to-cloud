@@ -13,7 +13,7 @@ def main():
     settings = get_settings()
 
     for entry in settings:
-        if entry.path is None:
+        if entry.root_path is None:
             log("Excluding entry %r", entry.name)
             continue
         if entry.type == EntryType.multiple_files:
@@ -41,8 +41,8 @@ def main():
 
             backup(buffer, entry.folder, filename=entry.zipname)
 
-            backup(entry.path, entry.folder)
         elif entry.type == EntryType.single_file:
+            backup(entry.root_path, entry.folder)
 
 
 if __name__ == "__main__":

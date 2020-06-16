@@ -13,7 +13,16 @@ class EntryType(Enum):
 
 
 class BackupEntry:
-    def __init__(self, name, type, path, cloud_folder_id=None, zip=False, zipname=None):
+    def __init__(
+        self,
+        name,
+        type,
+        root_path,
+        cloud_folder_id=None,
+        zip=False,
+        zipname=None,
+        filter=".",
+    ):
         """Represents an entry in .settings.yml
 
         Args:
@@ -29,10 +38,11 @@ class BackupEntry:
 
         self.name = name
         self.type = EntryType(type)
-        self.path = path
+        self.root_path = root_path
         self.folder = cloud_folder_id
         self.zip = zip
         self.zipname = zipname
+        self.filter = filter
 
     def __repr__(self):
         return vars(self).__repr__()
