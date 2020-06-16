@@ -4,11 +4,12 @@ from io import BytesIO
 import mimetypes
 from pathlib import Path
 import pickle
+from typing import Union
 from zipfile import ZipFile
 
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import MediaFileUpload, build
+from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
 from settings import EntryType, get_settings
@@ -20,6 +21,8 @@ LOG_PATH = Path(__file__).with_name("cloud-backup.log")
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 SETTINGS_PATH = Path(__file__).with_name(".settings.yml")
 TOKEN_PATH = Path(__file__).with_name("token.pickle")
+
+FileData = Union[Path, str, BytesIO]
 
 
 def log(template, *args):
@@ -34,15 +37,15 @@ class TokenError(Exception):
     pass
 
 
-def backup(file_path: str, folder=None, filename=None):
-    if isinstance(file_path, BytesIO):
-        filepath = file_path
-    else:
-        filepath = Path(file_path).absolute()
-        filename = filepath.name
-
+def backup(file_data: FileData, folder=None, filename=None):
+    if isinstance(file_data, (str, Path)):
+        filepath = Path(file_data)
         if not filepath.exists():
             raise FileNotFoundError(filepath.as_posix())
+
+        filename = filename or filepath.name
+        file_data = BytesIO(filepath.read_bytes())
+        del filepath
 
     service = get_google_drive_services()
     mimetype = mimetypes.guess_type(filename)[0]
@@ -60,8 +63,8 @@ def backup(file_path: str, folder=None, filename=None):
         raise RuntimeError("Files should not be more than one")
 
     if ids:
-        return save_version(service, filepath, ids[0], filename)
-    return save_new_file(service, filepath, folder, filename)
+        return save_version(service, file_data, ids[0], filename)
+    return save_new_file(service, file_data, folder, filename)
 
 
 def gen_token(creds):
@@ -102,7 +105,7 @@ def get_creds_from_token():
 
 
 def main():
-    settings = get_settings(SETTINGS_PATH)[:-1]
+    settings = get_settings(SETTINGS_PATH)
 
     for entry in settings:
         if entry.path is None:
@@ -111,67 +114,60 @@ def main():
         if entry.type == EntryType.folder:
             if not entry.zip:
                 files = glob(entry.path)
-                responses = []
                 for file in files:
-                    res = backup(file, entry.folder)
-                return all(responses)
+                    backup(file, entry.folder)
+                continue
 
             buffer = BytesIO()
             files = glob(entry.path)
 
+            min_file = min(files)
+            max_file = max(files)
+            while True:
+                try:
+                    Path(max_file).relative_to(min_file)
+                    break
+                except ValueError:
+                    min_file = Path(min_file).parent.as_posix()
+
             with ZipFile(buffer, "w") as myzip:
                 for file in files:
-                    myzip.write(file, Path(file).name)
+                    myzip.write(file, Path(file).relative_to(min_file))
 
-            filename = Path(entry.path).parts[-2] + ".zip"
-            return backup(buffer, entry.folder, filename=filename)
-            # zipfile_ob = zipfile.ZipFile(file_like_object)
+            backup(buffer, entry.folder, filename=entry.zipname)
 
         elif entry.type == EntryType.file:
             backup(entry.path, entry.folder)
 
 
-def save_new_file(gds, filepath: Path, folder=None, filename=None):
-    if isinstance(filepath, BytesIO):
-        pass
-    else:
-        filename = filepath.name
-        filepath = filepath.as_posix()
-
-    log("saving new file: %s", filepath)
-    mimetype = mimetypes.guess_type(filename)[0]
+def save_new_file(gds, file_data: BytesIO, folder=None, filename=None):
+    log("saving new file: %s", filename)
+    mimetype = get_mimetype(filename)
     file_metadata = {"name": filename, "mimeType": mimetype}
 
     if folder:
         file_metadata["parents"] = [folder]
 
-    media = MediaIoBaseUpload(filepath, mimetype=mimetype)
+    media = MediaIoBaseUpload(file_data, mimetype=mimetype)
     res = (
         gds.files().create(body=file_metadata, media_body=media, fields="id").execute()
     )
     return res
 
 
-def save_version(gds, filepath: Path, file_id: str, filename=None, keep_revision_forever=False):
-    log("saving new version of %s", filepath)
-
-    if isinstance(filepath, BytesIO):
-        pass
-    else:
-        filename = filepath.name
-        filepath = filepath.as_posix()
-
+def save_version(gds, file_data: BytesIO, file_id: str, filename=None):
+    log("saving new version of %s", filename)
     file_metadata = {
         "name": filename,
         "published": True,
     }
-    mimetype = mimetypes.guess_type(filename)[0]
-    media = MediaIoBaseUpload(filepath, mimetype=mimetype)
+    mimetype = get_mimetype(filename)
+    media = MediaIoBaseUpload(file_data, mimetype=mimetype)
     response = (
         gds.files()
         .update(
             fileId=file_id,
-            keepRevisionForever=keep_revision_forever,
+            keepRevisionForever=False,
             body=file_metadata,
             media_body=media,
         )
