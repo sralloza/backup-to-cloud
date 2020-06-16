@@ -1,5 +1,5 @@
-import argparse
 from enum import Enum
+from typing import Dict
 
 from ruamel.yaml import YAML
 
@@ -49,15 +49,12 @@ class BackupEntry:
 
 
 def get_settings():
+    def fmt(kw: Dict[str, str]) -> Dict[str, str]:
+        return {k.replace("-", "_"): v for k, v in kw.items()}
+
     settings_dict = YAML(typ="safe").load(SETTINGS_PATH.read_text())
     try:
-        return [BackupEntry(name=k, **v) for k, v in settings_dict.items()]
+        return [BackupEntry(name=k, **fmt(v)) for k, v in settings_dict.items()]
     except TypeError as exc:
         log(str(exc))
         raise exc
-
-
-def parse_args():
-    parser = argparse.ArgumentParser("backup-to-cloud")
-    subparsers = parser.add_subparsers()
-    check_glob_parser = subparsers.add_parser("check-glob")
