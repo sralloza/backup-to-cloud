@@ -9,7 +9,7 @@ from utils import log
 
 class EntryType(Enum):
     multiple_files = "multiple-files"
-    singple_file = "single-file"
+    single_file = "single-file"
 
 
 class BackupEntry:

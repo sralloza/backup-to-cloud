@@ -41,8 +41,8 @@ def main():
 
             backup(buffer, entry.folder, filename=entry.zipname)
 
-        elif entry.type == EntryType.singple_file:
             backup(entry.path, entry.folder)
+        elif entry.type == EntryType.single_file:
 
 
 if __name__ == "__main__":
