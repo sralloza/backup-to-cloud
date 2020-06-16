@@ -181,5 +181,9 @@ def save_version(gds, filepath: Path, file_id: str, filename=None, keep_revision
     return response
 
 
+def get_mimetype(filename: str) -> str:
+    return mimetypes.guess_type(filename)[0] or "application/octet-stream"
+
+
 if __name__ == "__main__":
     main()
