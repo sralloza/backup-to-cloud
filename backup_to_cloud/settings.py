@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Dict
 
 from ruamel.yaml import YAML
 
@@ -10,6 +9,11 @@ from .utils import log
 class EntryType(Enum):
     multiple_files = "multiple-files"
     single_file = "single-file"
+
+
+VALID_ATTRS = ["name", "type", "root_path", "folder", "zip", "zipname", "filter"]
+REQUIRED_ATTRS = {"name", "type", "root_path"}
+VALID_TYPES = {"multiple-files", "single-file"}
 
 
 class BackupEntry:
@@ -59,12 +63,47 @@ class BackupEntry:
 
 
 def get_settings():
-    def fmt(kw: Dict[str, str]) -> Dict[str, str]:
-        return {k.replace("-", "_"): v for k, v in kw.items()}
-
     settings_dict = YAML(typ="safe").load(SETTINGS_PATH.read_text())
-    try:
-        return [BackupEntry(name=k, **fmt(v)) for k, v in settings_dict.items()]
-    except TypeError as exc:
-        log(str(exc))
-        raise exc
+
+    entries = []
+    for name, yaml_entry in settings_dict.items():
+        result = check_yaml_entry(name=name, **yaml_entry)
+        entries.append(BackupEntry(name=name, **result))
+    return entries
+
+
+def check_yaml_entry(name, **yaml_entry):
+    result = {}
+    keys = set(["name"])
+    for key, value in yaml_entry.items():
+        key = key.replace("-", "_")
+        if key not in VALID_ATTRS:
+            raise Exception
+
+        result[key] = value
+        keys.add(key)
+
+    if REQUIRED_ATTRS - keys:
+        missing = REQUIRED_ATTRS - keys
+        msg = f"Missing required attributes in query {name}: {missing!r}"
+        raise Exception(msg)
+
+    if result["type"] not in VALID_TYPES:
+        msg = f"{result['type']!r} if not a valid type {VALID_TYPES}"
+        raise TypeError(msg)
+
+    def check_attr(key, attr_type):
+        if result.get(key):
+            if not isinstance(result[key], attr_type):
+                real_type = type(attr_type).__name__
+                msg = f"If defined, {key} must be {attr_type}, not {real_type}"
+                exc = TypeError(msg)
+                log(str(exc))
+                raise exc
+
+    check_attr("cloud_folder_id", str)
+    check_attr("zip", bool)
+    check_attr("zipname", str)
+    check_attr("filter", str)
+
+    return result
