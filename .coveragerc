@@ -1,0 +1,5 @@
+[run]
+branch = True
+omit =
+    backup_to_cloud/_version.py
+    .venv/*
