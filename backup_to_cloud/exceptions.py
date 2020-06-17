@@ -4,3 +4,7 @@ class BackupError(Exception):
 
 class TokenError(BackupError):
     pass
+
+
+class SettingsError(BackupError):
+    pass
