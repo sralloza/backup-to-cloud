@@ -1,5 +1,16 @@
 [run]
 branch = True
+
+source = backup_to_cloud, tests, ./
+
 omit =
     backup_to_cloud/_version.py
     .venv/*
+    setup.py
+    versioneer.py
+    launcher.py
+
+[report]
+exclude_lines =
+    if __name__ == .__main__.:
+    if __name__ == "__main__":
