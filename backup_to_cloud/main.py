@@ -52,7 +52,7 @@ def _main():
 
         elif entry.type == EntryType.single_file:
             mimetype = get_mimetype(entry.root_path)
-            backup(entry.root_path,mimetype, entry.folder)
+            backup(entry.root_path, mimetype, entry.folder)
 
 
 def main():
