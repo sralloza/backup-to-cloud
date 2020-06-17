@@ -10,10 +10,6 @@ class SettingsError(Exception):
     pass
 
 
-class SettingsWarning(Warning):
-    pass
-
-
 class EntryType(Enum):
     multiple_files = "multiple-files"
     single_file = "single-file"
