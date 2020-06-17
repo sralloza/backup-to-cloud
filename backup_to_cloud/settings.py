@@ -26,11 +26,21 @@ class BackupEntry:
         """Represents an entry in .settings.yml
 
         Args:
-            name (str): name of the entry.
-            type (str): type of the entry. Must be declared as EntryType.
-            path (str): path of the entry. Can be glob.
-            cloud_folder_id (str, optional): Id of the folder to save in google drvie.
-                If None, the files will be uploaded to the root folder. Defaults to None.
+            name (str): the name of the entry. It is irrelevant, only representative.
+            type (str): the entry type. Right now it can be `single-file` or
+                `multiple-files`.
+            root_path (str): if type is `single-file`, it represents the path of the
+                file. If type is `multiple-files`, it represents the root folder where
+                the sistem will start listing files.
+            filter (str): if the type is `multiple-files`, this regex filter will
+                be applied to every file located below `root-path`. The search it's
+                recursively. For example, to select all pdf files, use `filter=.py`.
+                By default is `'.'`, which is a regex for match anything. It is
+                encouraged to check the regex before creating the first backup.
+                To check the regex check README). Defaults to '.'.
+            cloud_folder_id (str, optional): id of the folder to save the file(s)
+                into. If is not present or is None, the files will be stored in
+                the root folder (`Drive`). Defaults to None.
             zip (bool, optional): If True and type is folder, all files will be uploaded as
                 zip. Defaults to False.
             zipname (str, optional): if zip, this is the file name. Defaults to None.
