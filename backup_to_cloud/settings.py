@@ -1,9 +1,17 @@
 from enum import Enum
+import warnings
 
 from ruamel.yaml import YAML
 
 from .paths import SETTINGS_PATH
-from .utils import log
+
+
+class SettingsError(Exception):
+    pass
+
+
+class SettingsWarning(Warning):
+    pass
 
 
 class EntryType(Enum):
@@ -11,9 +19,18 @@ class EntryType(Enum):
     single_file = "single-file"
 
 
-VALID_ATTRS = ["name", "type", "root_path", "folder", "zip", "zipname", "filter"]
 REQUIRED_ATTRS = {"name", "type", "root_path"}
-VALID_TYPES = {"multiple-files", "single-file"}
+VALID_TYPES = {x.value for x in EntryType}
+ATTRS_TYPES = {
+    "name": str,
+    "type": str,
+    "root_path": str,
+    "cloud_folder_id": str,
+    "zip": bool,
+    "zipname": str,
+    "filter": str,
+}
+VALID_ATTRS = set(ATTRS_TYPES.keys())
 
 
 class BackupEntry:
@@ -59,7 +76,8 @@ class BackupEntry:
         self.filter = filter
 
     def __repr__(self):
-        return vars(self).__repr__()
+        attrs = vars(self).__repr__()
+        return f"BackupEntry(attrs={attrs})"
 
 
 def get_settings():
@@ -68,42 +86,54 @@ def get_settings():
     entries = []
     for name, yaml_entry in settings_dict.items():
         result = check_yaml_entry(name=name, **yaml_entry)
-        entries.append(BackupEntry(name=name, **result))
+        entries.append(BackupEntry(**result))
     return entries
 
 
-def check_yaml_entry(name, **yaml_entry):
+def check_yaml_entry(**yaml_entry):
     result = {}
-    keys = set(["name"])
+    keys = set()
     for key, value in yaml_entry.items():
         key = key.replace("-", "_")
         if key not in VALID_ATTRS:
-            raise Exception
+            msg = f"{key!r} is not a valid attribute {VALID_ATTRS}"
+            raise SettingsError(msg)
 
         result[key] = value
         keys.add(key)
 
     if REQUIRED_ATTRS - keys:
         missing = REQUIRED_ATTRS - keys
+        name = result.get("name", "null")
         msg = f"Missing required attributes in query {name}: {missing!r}"
-        raise Exception(msg)
+        raise SettingsError(msg)
 
     if result["type"] not in VALID_TYPES:
-        msg = f"{result['type']!r} if not a valid type {VALID_TYPES}"
+        valid_types = ", ".join(VALID_TYPES)
+        msg = f"{result['type']!r} is not a valid Entrytype ({valid_types})"
         raise TypeError(msg)
 
-    def check_attr(key, attr_type):
-        if result.get(key):
-            if not isinstance(result[key], attr_type):
-                real_type = type(attr_type).__name__
-                msg = f"If defined, {key} must be {attr_type}, not {real_type}"
-                exc = TypeError(msg)
-                log(str(exc))
-                raise exc
+    def check_attr(key, required):
+        attr_type = ATTRS_TYPES[key]
 
-    check_attr("cloud_folder_id", str)
-    check_attr("zip", bool)
-    check_attr("zipname", str)
-    check_attr("filter", str)
+        if result.get(key) or required:
+            if not isinstance(result[key], attr_type):
+                real_type = type(result.get(key)).__name__
+                msg = ""
+                if not required:
+                    msg += "If defined, "
+                msg += f"{key!r} must be {attr_type.__name__!r}, not {real_type!r}"
+
+                raise TypeError(msg)
+
+    for attribute in VALID_ATTRS - REQUIRED_ATTRS:
+        check_attr(attribute, False)
+
+    for attribute in REQUIRED_ATTRS:
+        check_attr(attribute, True)
+
+    if result.get("zip"):
+        if not result.get("zipname"):
+            raise SettingsError("Must provide 'zipname' if zip=True")
 
     return result
