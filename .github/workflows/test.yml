@@ -22,6 +22,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install black pytest pytest-cov
         pip install -r requirements.txt
+        pip install -e .
     - name: Lint with black
       run: |
         black --diff --check backup_to_cloud
