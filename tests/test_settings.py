@@ -5,12 +5,12 @@ from unittest import mock
 import pytest
 from ruamel.yaml import YAML
 
+from backup_to_cloud.exceptions import SettingsError
 from backup_to_cloud.settings import (
     ATTRS_TYPES,
-    REQUIRED_ATTRS,
-    VALID_ATTRS,
     BackupEntry,
     EntryType,
+    REQUIRED_ATTRS,
     SettingsError,
     check_yaml_entry,
     get_settings,
@@ -113,7 +113,11 @@ class TestCheckYamlEntry:
 
     def test_ok_basic(self, attrs):
         result = check_yaml_entry(**attrs)
-        assert result == {"name": "name", "root_path": "/home/test", "type": "single-file"}
+        assert result == {
+            "name": "name",
+            "root_path": "/home/test",
+            "type": "single-file",
+        }
 
     # def test_error_no_name(self, attrs):
     #     attrs.pop("name")
@@ -208,8 +212,10 @@ class TestCheckYamlEntry:
             attrs[attr] = ATTRS_TYPES[attr](2)
         attrs[attribute] = 1 + 2j
 
-        match = f"{attribute!r} must be {ATTRS_TYPES[attribute].__name__!r}, not 'complex'"
+        match = (
+            f"{attribute!r} must be {ATTRS_TYPES[attribute].__name__!r}, not 'complex'"
+        )
         if attribute not in REQUIRED_ATTRS:
-            match ="If defined, "+match
+            match = "If defined, " + match
         with pytest.raises(TypeError, match=match):
             check_yaml_entry(**attrs)

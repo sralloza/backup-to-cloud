@@ -3,15 +3,8 @@ import warnings
 
 from ruamel.yaml import YAML
 
+from .exceptions import SettingsError
 from .paths import SETTINGS_PATH
-
-
-class SettingsError(Exception):
-    pass
-
-
-class SettingsWarning(Warning):
-    pass
 
 
 class EntryType(Enum):

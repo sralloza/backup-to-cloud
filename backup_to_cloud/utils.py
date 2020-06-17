@@ -9,14 +9,12 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from .exceptions import TokenError
 from .paths import CREDENTIALS_PATH, LOG_PATH, TOKEN_PATH
+
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 ZIP_MIMETYPE = "application/octet-stream"
-
-
-class TokenError(Exception):
-    pass
 
 
 def log(template, *args):
