@@ -18,6 +18,7 @@ ZIP_MIMETYPE = "application/octet-stream"
 _EXTRA_MIME_TYPES = (
     ("application/arj", ".arj"),
     ("application/cab", ".cab"),
+    ("application/vnd.ms-powerpoint", ".pot"),
     ("application/x-msaccess", ".mdb"),
     ("application/x-python-code", ".pyc"),
     ("application/x-rar-compressed", ".rar"),
