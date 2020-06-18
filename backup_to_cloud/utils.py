@@ -24,6 +24,7 @@ _EXTRA_MIME_TYPES = (
     ("application/x-sqlite3", ".db"),
     ("application/x-sqlite3", ".sqlite"),
     ("application/zip", ".zip"),
+    ("image/x-ms-bmp", ".bmp"),
     ("text/csv", ".csv"),
     ("text/x-php", ".php"),
     ("text/x-python", ".py"),

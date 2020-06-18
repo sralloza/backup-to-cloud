@@ -181,7 +181,7 @@ class TestGetCredsFromToken:
 def test_get_mimetype():
     test = get_mimetype
     assert test("folder/file.arj") == "application/arj"
-    assert test("folder/file.bmp") == "image/bmp"
+    assert test("folder/file.bmp") == "image/x-ms-bmp"
     assert test("folder/file.cab") == "application/cab"
     assert test("folder/file.csv") == "text/csv"
     assert test("folder/file.db") == "application/x-sqlite3"
