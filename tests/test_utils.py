@@ -272,7 +272,7 @@ def test_get_mimetype():
         test("folder/file.xltx")
         == "application/vnd.openxmlformats-officedocument.spreadsheetml.template"
     )
-    assert test("folder/file.xml") == "text/xml"
+    assert test("folder/file.xml") == "application/xml"
     assert test("folder/file.zip") == "application/zip"
     assert test("folder/file.unkown") == "application/octet-stream"
 
