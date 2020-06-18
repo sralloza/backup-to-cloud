@@ -1,9 +1,9 @@
-from datetime import datetime
 import mimetypes
 import os
-from pathlib import Path
 import pickle
 import re
+from datetime import datetime
+from pathlib import Path
 
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -12,7 +12,6 @@ from googleapiclient.discovery import build
 from .exceptions import TokenError
 from .paths import CREDENTIALS_PATH, LOG_PATH, TOKEN_PATH
 
-
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 ZIP_MIMETYPE = "application/octet-stream"
 
@@ -20,7 +19,10 @@ ZIP_MIMETYPE = "application/octet-stream"
 def log(template, *args):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     time_str = f"[{now}] "
-    message = template % args
+    if isinstance(template, BaseException):
+        message = "ERROR: " + repr(template)
+    else:
+        message = template % args
     with LOG_PATH.open("at", encoding="utf-8") as file_handler:
         file_handler.write(time_str + message + "\n")
 
@@ -44,7 +46,7 @@ def get_google_drive_services(creds=None):
 def get_creds_from_token():
     if not TOKEN_PATH.exists():
         exc = TokenError(f"{TOKEN_PATH.as_posix()!r} doesn't exist")
-        log(str(exc))
+        log(exc)
         raise exc
 
     creds = pickle.loads(TOKEN_PATH.read_bytes())
@@ -56,7 +58,7 @@ def get_creds_from_token():
             TOKEN_PATH.write_bytes(pickle.dumps(creds))
         else:
             exc = TokenError(f"Invalid token: {TOKEN_PATH.as_posix()!r}")
-            log(str(exc))
+            log(exc)
             raise exc
 
     return creds
