@@ -27,7 +27,7 @@ def log(template, *args):
         file_handler.write(time_str + message + "\n")
 
 
-def gen_token(creds):
+def gen_new_token():
     flow = InstalledAppFlow.from_client_secrets_file(
         CREDENTIALS_PATH.as_posix(), SCOPES
     )
