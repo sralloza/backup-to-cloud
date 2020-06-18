@@ -1,6 +1,6 @@
 from datetime import datetime
 import mimetypes
-import os
+from os import walk
 from pathlib import Path
 import pickle
 import re
@@ -12,20 +12,39 @@ from googleapiclient.discovery import build
 from .exceptions import TokenError
 from .paths import CREDENTIALS_PATH, LOG_PATH, TOKEN_PATH
 
-
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 ZIP_MIMETYPE = "application/octet-stream"
+
+_EXTRA_MIME_TYPES = (
+    ("application/arj", ".arj"),
+    ("application/cab", ".cab"),
+    ("application/vnd.ms-excel", ".xla"),
+    ("application/vnd.ms-powerpoint", ".pot"),
+    ("application/x-msaccess", ".mdb"),
+    ("application/x-python-code", ".pyc"),
+    ("application/x-rar-compressed", ".rar"),
+    ("application/x-sqlite3", ".db"),
+    ("application/x-sqlite3", ".sqlite"),
+    ("application/zip", ".zip"),
+    ("image/x-ms-bmp", ".bmp"),
+    ("text/csv", ".csv"),
+    ("text/x-php", ".php"),
+    ("text/x-python", ".py"),
+)
 
 
 def log(template, *args):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     time_str = f"[{now}] "
-    message = template % args
+    if isinstance(template, BaseException):
+        message = "ERROR: " + repr(template)
+    else:
+        message = template % args
     with LOG_PATH.open("at", encoding="utf-8") as file_handler:
         file_handler.write(time_str + message + "\n")
 
 
-def gen_token(creds):
+def gen_new_token():
     flow = InstalledAppFlow.from_client_secrets_file(
         CREDENTIALS_PATH.as_posix(), SCOPES
     )
@@ -44,7 +63,7 @@ def get_google_drive_services(creds=None):
 def get_creds_from_token():
     if not TOKEN_PATH.exists():
         exc = TokenError(f"{TOKEN_PATH.as_posix()!r} doesn't exist")
-        log(str(exc))
+        log(exc)
         raise exc
 
     creds = pickle.loads(TOKEN_PATH.read_bytes())
@@ -56,27 +75,28 @@ def get_creds_from_token():
             TOKEN_PATH.write_bytes(pickle.dumps(creds))
         else:
             exc = TokenError(f"Invalid token: {TOKEN_PATH.as_posix()!r}")
-            log(str(exc))
+            log(exc)
             raise exc
 
     return creds
 
 
 def get_mimetype(filepath: str) -> str:
-    mimetype = mimetypes.guess_type(filepath)[0]
-    if mimetype:
-        return mimetype
+    """Returns the mimetype of the `filepath` based on its extension.
 
-    data = Path(filepath).read_bytes()
-    try:
-        data.decode()
-    except UnicodeDecodeError:
-        try:
-            data.decode("utf-8")
-        except UnicodeDecodeError:
-            return "application/octet-stream"
+    Args:
+        filepath (str): input filepath.
 
-    return "text/plain"
+    Returns:
+        str: mimetype of `filepath`.
+    """
+
+    return mimetypes.guess_type(filepath)[0] or "application/octet-stream"
+
+
+def _improve_mimetypes():
+    for mime_type, extension in _EXTRA_MIME_TYPES:
+        mimetypes.add_type(mime_type, extension, strict=True)
 
 
 def list_files(root_path, regex_filter):
@@ -84,10 +104,13 @@ def list_files(root_path, regex_filter):
     pattern = re.compile(regex_filter, re.IGNORECASE)
     files = []
 
-    for root, _, temp_files in os.walk(root_path.as_posix()):
+    for root, _, temp_files in walk(root_path.as_posix()):
         for file in temp_files:
             filepath = Path(root).joinpath(file)
             if pattern.search(filepath.as_posix()):
                 files.append(filepath)
 
     return files
+
+
+_improve_mimetypes()
