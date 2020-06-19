@@ -47,11 +47,7 @@ class TestBackup:
     def file_data(self, request):
         yield self._file_data[request.param]
 
-    @pytest.fixture(params=[None, "<folder-id>"])
-    def folder_id(self, request):
-        yield request.param
-
-    def test_backup(self, exists, file_data, folder_id, filename, nids):
+    def test_backup(self, exists, file_data, filename, nids):
         self.p_exists_m.return_value = exists
         useful_filename = filename or "<filepath>"
 
@@ -67,6 +63,7 @@ class TestBackup:
 
         mimetype = None
         result = None
+        folder_id = "<folder-id>"
 
         # Manage file_data different types
         if not exists and not isinstance(file_data, BytesIO):
@@ -118,10 +115,7 @@ class TestBackup:
 
         # Google Drive API
         self.sgds_m.assert_called_once_with()
-        if folder_id:
-            query = "name = '%s' and '<folder-id>' in parents" % useful_filename
-        else:
-            query = "name = '%s'" % useful_filename
+        query = "name = '%s' and '<folder-id>' in parents" % useful_filename
 
         self.sgds_m.return_value.files.assert_called_once_with()
         files.list.assert_called_once_with(q=query, fields="files(id, name)")
