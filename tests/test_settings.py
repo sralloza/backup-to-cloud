@@ -1,9 +1,7 @@
-from enum import Enum
 from itertools import permutations
 from unittest import mock
 
 import pytest
-from ruamel.yaml import YAML
 
 from backup_to_cloud.exceptions import SettingsError
 from backup_to_cloud.settings import (
@@ -11,7 +9,6 @@ from backup_to_cloud.settings import (
     BackupEntry,
     EntryType,
     REQUIRED_ATTRS,
-    SettingsError,
     check_yaml_entry,
     get_settings,
 )
