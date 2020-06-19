@@ -20,6 +20,7 @@ class TestHiddenMain:
         self.list_files_m = mock.patch("backup_to_cloud.main.list_files").start()
         self.zipfile_m = mock.patch("backup_to_cloud.main.ZipFile").start()
         self.bytesio_m = mock.patch("backup_to_cloud.main.BytesIO").start()
+        self.log_m = mock.patch("backup_to_cloud.main.log").start()
 
         yield
 
@@ -36,6 +37,7 @@ class TestHiddenMain:
         self.get_mt_m.assert_not_called()
         self.get_settings_m.assert_called_once_with()
         self.list_files_m.assert_not_called()
+        self.log_m.assert_called_once_with("Excluding entry %r", "<name>")
 
     def test_single_file(self):
         entry = BackupEntry("<name>", "single-file", "/home/file.pdf", "<folder-id>")
@@ -50,6 +52,7 @@ class TestHiddenMain:
         self.get_mt_m.assert_called_once_with("/home/file.pdf")
         self.get_settings_m.assert_called_once_with()
         self.list_files_m.assert_not_called()
+        self.log_m.assert_not_called()
 
     @pytest.mark.parametrize("nulls", range(11))
     def test_single_file_mix(self, nulls):
@@ -75,9 +78,13 @@ class TestHiddenMain:
             self.backup_m.assert_not_called()
             self.get_mt_m.assert_not_called()
 
+        if nulls != 0:
+            self.log_m.assert_called_with("Excluding entry %r", "<name>")
+
         self.bytesio_m.assert_not_called()
         assert self.backup_m.call_count == 10 - nulls
         assert self.get_mt_m.call_count == 10 - nulls
+        assert self.log_m.call_count == nulls
 
     def test_invalid_type(self):
         entry = BackupEntry("<name>", "single-file", None, "<folder-id>")
