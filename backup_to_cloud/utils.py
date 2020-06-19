@@ -25,6 +25,7 @@ _EXTRA_MIME_TYPES = (
     ("application/x-rar-compressed", ".rar"),
     ("application/x-sqlite3", ".db"),
     ("application/x-sqlite3", ".sqlite"),
+    ("application/xml", ".xml"),
     ("application/zip", ".zip"),
     ("image/x-ms-bmp", ".bmp"),
     ("text/csv", ".csv"),
