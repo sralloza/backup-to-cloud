@@ -4,6 +4,7 @@ from typing import Union
 
 from googleapiclient.http import MediaIoBaseUpload
 
+from .exceptions import MultipleFilesError
 from .utils import get_google_drive_services, log
 
 FileData = Union[Path, str, BytesIO]
@@ -13,25 +14,33 @@ def backup(file_data: FileData, mimetype, folder=None, filename=None):
     if isinstance(file_data, (str, Path)):
         filepath = Path(file_data)
         if not filepath.exists():
-            raise FileNotFoundError(filepath.as_posix())
+            exc = FileNotFoundError(filepath.as_posix())
+            log(exc)
+            raise exc
 
         filename = filename or filepath.name
         file_data = BytesIO(filepath.read_bytes())
         del filepath
+    else:
+        if not filename:
+            exc = ValueError("if file_data is BytesIO, filename is required")
+            log(exc)
+            raise exc
 
     service = get_google_drive_services()
-    file_metadata = {"name": filename, "mimeType": mimetype}
     query = "name = %r" % (filename)
 
     if folder:
-        file_metadata["parents"] = [folder]
         query += " and %r in parents" % (folder)
 
-    response = service.files().list(q=query, fields="files(id, name)",).execute()
+    response = service.files().list(q=query, fields="files(id, name)").execute()
     ids = [x.get("id") for x in response.get("files", [])]
 
     if len(ids) > 1:
-        raise RuntimeError("Files should not be more than one")
+        msg = f"Detected more than one file named {filename!r} in the target folder"
+        exc = MultipleFilesError(msg)
+        log(exc)
+        raise exc
 
     if ids:
         return save_version(service, file_data, mimetype, ids[0], filename)
