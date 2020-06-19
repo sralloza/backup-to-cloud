@@ -1,6 +1,11 @@
 import pytest
 
-from backup_to_cloud.exceptions import BackupError, SettingsError, TokenError
+from backup_to_cloud.exceptions import (
+    BackupError,
+    NoFilesFoundError,
+    SettingsError,
+    TokenError,
+)
 
 
 class TestBackupError:
@@ -14,15 +19,15 @@ class TestBackupError:
             raise BackupError
 
 
-class TestTokenError:
+class TestNoFilesFoundError:
     def test_inheritance(self):
-        exc = TokenError()
-        assert isinstance(exc, TokenError)
+        exc = NoFilesFoundError()
+        assert isinstance(exc, NoFilesFoundError)
         assert isinstance(exc, BackupError)
 
     def test_raises(self):
-        with pytest.raises(TokenError):
-            raise TokenError
+        with pytest.raises(NoFilesFoundError):
+            raise NoFilesFoundError
 
 
 class TestSettingsError:
@@ -34,3 +39,14 @@ class TestSettingsError:
     def test_raises(self):
         with pytest.raises(SettingsError):
             raise SettingsError
+
+
+class TestTokenError:
+    def test_inheritance(self):
+        exc = TokenError()
+        assert isinstance(exc, TokenError)
+        assert isinstance(exc, BackupError)
+
+    def test_raises(self):
+        with pytest.raises(TokenError):
+            raise TokenError
