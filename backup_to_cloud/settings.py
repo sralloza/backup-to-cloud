@@ -32,7 +32,7 @@ class BackupEntry:
         name,
         type,
         root_path,
-        cloud_folder_id=None,
+        cloud_folder_id="root",
         zip=False,
         zipname=None,
         filter=".",
@@ -53,8 +53,8 @@ class BackupEntry:
                 encouraged to check the regex before creating the first backup.
                 To check the regex check README). Defaults to '.'.
             cloud_folder_id (str, optional): id of the folder to save the file(s)
-                into. If is not present or is None, the files will be stored in
-                the root folder (`Drive`). Defaults to None.
+                into. If is not present or is 'root', the files will be stored in
+                the root folder (`Drive`). Defaults to 'root'.
             zip (bool, optional): If True and type is folder, all files will be uploaded as
                 zip. Defaults to False.
             zipname (str, optional): if zip, this is the file name. Defaults to None.

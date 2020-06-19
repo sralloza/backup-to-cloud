@@ -10,7 +10,7 @@ from .utils import get_google_drive_services, log
 FileData = Union[Path, str, BytesIO]
 
 
-def backup(file_data: FileData, mimetype, folder=None, filename=None):
+def backup(file_data: FileData, mimetype, folder, filename=None):
     if isinstance(file_data, (str, Path)):
         filepath = Path(file_data)
         if not filepath.exists():
@@ -28,16 +28,16 @@ def backup(file_data: FileData, mimetype, folder=None, filename=None):
             raise exc
 
     service = get_google_drive_services()
-    query = "name = %r" % (filename)
-
-    if folder:
-        query += " and %r in parents" % (folder)
+    query = f"name = {filename!r} and {folder!r} in parents"
 
     response = service.files().list(q=query, fields="files(id, name)").execute()
     ids = [x.get("id") for x in response.get("files", [])]
 
     if len(ids) > 1:
-        msg = f"Detected more than one file named {filename!r} in the target folder"
+        msg = (
+            "Detected more than one file named "
+            f"{filename!r} in the target folder {ids!r}"
+        )
         exc = MultipleFilesError(msg)
         log(exc)
         raise exc

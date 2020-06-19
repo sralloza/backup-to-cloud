@@ -20,7 +20,7 @@ class TestBackupEntry:
         assert be.name == "<name>"
         assert be.type == EntryType.single_file
         assert be.root_path == "<root-path>"
-        assert be.folder is None
+        assert be.folder is "root"
         assert be.zip is False
         assert be.zipname is None
         assert be.filter == "."
