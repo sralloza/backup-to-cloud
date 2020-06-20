@@ -16,17 +16,17 @@ from backup_to_cloud.settings import (
 
 class TestBackupEntry:
     def test_init_min(self):
-        be = BackupEntry("<name>", "single-file", "<root-path>")
-        assert be.name == "<name>"
-        assert be.type == EntryType.single_file
-        assert be.root_path == "<root-path>"
-        assert be.folder is "root"
-        assert be.zip is False
-        assert be.zipname is None
-        assert be.filter == "."
+        entry = BackupEntry("<name>", "single-file", "<root-path>")
+        assert entry.name == "<name>"
+        assert entry.type == EntryType.single_file
+        assert entry.root_path == "<root-path>"
+        assert entry.folder == "root"
+        assert entry.zip is False
+        assert entry.zipname is None
+        assert entry.filter == "."
 
     def test_init_all(self):
-        be = BackupEntry(
+        entry = BackupEntry(
             "<name>",
             "multiple-files",
             "<root-path>",
@@ -35,22 +35,22 @@ class TestBackupEntry:
             "<zipname>",
             "<filter>",
         )
-        assert be.name == "<name>"
-        assert be.type == EntryType.multiple_files
-        assert be.root_path == "<root-path>"
-        assert be.folder == "<cloud-folder-id>"
-        assert be.zip is True
-        assert be.zipname == "<zipname>"
-        assert be.filter == "<filter>"
+        assert entry.name == "<name>"
+        assert entry.type == EntryType.multiple_files
+        assert entry.root_path == "<root-path>"
+        assert entry.folder == "<cloud-folder-id>"
+        assert entry.zip is True
+        assert entry.zipname == "<zipname>"
+        assert entry.filter == "<filter>"
 
     def test_init_type_error(self):
         with pytest.raises(ValueError, match="'invalid-type' is not a valid EntryType"):
             BackupEntry("<name>", "invalid-type", "<root-path>")
 
     def test_repr(self):
-        be = BackupEntry("<name>", "single-file", "<root-path>")
-        attrs = vars(be)
-        assert repr(be) == "BackupEntry(attrs=%s)" % attrs
+        entry = BackupEntry("<name>", "single-file", "<root-path>")
+        attrs = vars(entry)
+        assert repr(entry) == "BackupEntry(attrs=%s)" % attrs
 
 
 class TestGetSettings:
@@ -115,11 +115,6 @@ class TestCheckYamlEntry:
             "root_path": "/home/test",
             "type": "single-file",
         }
-
-    # def test_error_no_name(self, attrs):
-    #     attrs.pop("name")
-    #     with pytest.raises(TypeError, match=r"check_yaml_entry\(\) [\s\w]+: 'name'"):
-    #         check_yaml_entry(**attrs)
 
     def test_invalid_attrs(self, attrs):
         attrs["invalid"] = True
@@ -201,7 +196,7 @@ class TestCheckYamlEntry:
 
     @pytest.mark.parametrize("attribute", ATTRS_TYPES.keys() - {"type"})
     def test_invalid_types(self, attrs, attribute):
-        for attr in ATTRS_TYPES.keys():
+        for attr in ATTRS_TYPES:
             if attr == attribute:
                 continue
             if attr in attrs:

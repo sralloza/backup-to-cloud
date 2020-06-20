@@ -1,18 +1,23 @@
+"""Exceptions used in `backup_to_cloud`."""
+
+
 class BackupError(Exception):
-    pass
+    """Base class for exceptions in the app."""
 
 
 class MultipleFilesError(BackupError):
-    pass
+    """There is more than one file in the target folder named as
+    the target file.
+    """
 
 
 class NoFilesFoundError(BackupError):
-    pass
+    """No files found for a BackupEntry, given the path and filter."""
 
 
 class SettingsError(BackupError):
-    pass
+    """Maluse of settings."""
 
 
 class TokenError(BackupError):
-    pass
+    """Errors related to the google drive token."""

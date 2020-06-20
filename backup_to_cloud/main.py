@@ -1,3 +1,5 @@
+"""Main module to handle start of execution."""
+
 import argparse
 from io import BytesIO
 from pathlib import Path
@@ -12,6 +14,7 @@ from .utils import ZIP_MIMETYPE, get_mimetype, list_files, log
 
 
 def _main():
+    """Real main function."""
     settings = get_settings()
 
     for entry in settings:
@@ -60,6 +63,7 @@ def _main():
 
 
 def main():
+    """Wrapper of real main function."""
     args = vars(parse_args())
     if args["command"] == "check-regex":
         files = list_files(args["root-path"], args["regex"])
@@ -71,7 +75,13 @@ def main():
         _main()
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
+    """Parses args from the command line.
+
+    Returns:
+        argparse.Namespace: arguments parsed.
+    """
+
     parser = argparse.ArgumentParser("backup-to-cloud")
     subparsers = parser.add_subparsers(dest="command")
     check_regex_parser = subparsers.add_parser("check-regex")

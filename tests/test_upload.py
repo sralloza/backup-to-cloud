@@ -79,7 +79,7 @@ class TestBackup:
             return
 
         if isinstance(file_data, BytesIO) and not filename:
-            msg = "if file_data is BytesIO, filename is required"
+            msg = "If file_data is BytesIO, filename is required"
             with pytest.raises(ValueError, match=msg) as exc:
                 backup(file_data, mimetype, folder_id, filename)
 
