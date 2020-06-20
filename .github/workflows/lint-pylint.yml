@@ -1,0 +1,28 @@
+name: lint-pylint
+
+on:
+  push
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pylint pytest
+        pip install -r requirements.txt
+        pip install -e .
+    - name: Lint with pylint module
+      run: |
+        pylint backup_to_cloud --ignore=_version.py -d C0330,W0622,R0913,R0903
+    - name: Linth with pylint tests
+      run: |
+        pylint tests -d C0330,C0114,C0115,C0116,R0201,R0915,W0201,R0914,R0912,C0415
