@@ -220,9 +220,9 @@ class TestMain:
         )
         self.parse_args_m.return_value = namespace
 
-        m = mock.MagicMock()
-        m.__str__.return_value = "<file>"
-        self.list_files_m.return_value = [m] * 20
+        mymock = mock.MagicMock()
+        mymock.__str__.return_value = "<file>"
+        self.list_files_m.return_value = [mymock] * 20
 
         with pytest.raises(SystemExit, match="0"):
             main()
@@ -231,8 +231,8 @@ class TestMain:
         assert captured.err == ""
         assert captured.out == "<file>\n" * 20
 
-        m.__str__.assert_called()
-        assert m.__str__.call_count == 20
+        mymock.__str__.assert_called()  # pylint: disable=E1101
+        assert mymock.__str__.call_count == 20  # pylint: disable=E1101
 
         self.parse_args_m.assert_called_once_with()
         self.list_files_m.assert_called_once_with("<root-path>", "<regex>")
