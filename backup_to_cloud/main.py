@@ -3,14 +3,13 @@
 import argparse
 from io import BytesIO
 from pathlib import Path
-import sys
 from zipfile import ZipFile
 
 from backup_to_cloud.exceptions import NoFilesFoundError, SettingsError
 
 from .settings import EntryType, get_settings
 from .upload import backup
-from .utils import ZIP_MIMETYPE, get_mimetype, list_files, log
+from .utils import ZIP_MIMETYPE, gen_new_token, get_mimetype, list_files, log
 
 
 def _main():
@@ -69,8 +68,8 @@ def main():
         files = list_files(args["root-path"], args["regex"])
         for file in files:
             print(file)
-        sys.exit(0)
-
+    elif args["command"] == "gen-token":
+        gen_new_token()
     else:
         _main()
 
@@ -84,6 +83,7 @@ def parse_args() -> argparse.Namespace:
 
     parser = argparse.ArgumentParser("backup-to-cloud")
     subparsers = parser.add_subparsers(dest="command")
+    subparsers.add_parser("gen-token")
     check_regex_parser = subparsers.add_parser("check-regex")
     check_regex_parser.add_argument("root-path")
     check_regex_parser.add_argument("regex", default=".", nargs="?")

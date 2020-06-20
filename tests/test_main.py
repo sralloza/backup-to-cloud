@@ -199,6 +199,7 @@ class TestMain:
         self.hid_main_m = mock.patch("backup_to_cloud.main._main").start()
         self.list_files_m = mock.patch("backup_to_cloud.main.list_files").start()
         self.parse_args_m = mock.patch("backup_to_cloud.main.parse_args").start()
+        self.token_m = mock.patch("backup_to_cloud.main.gen_new_token").start()
 
         yield
 
@@ -213,6 +214,7 @@ class TestMain:
         self.hid_main_m.assert_not_called()
         self.list_files_m.assert_not_called()
         self.parse_args_m.assert_called_once_with()
+        self.token_m.assert_not_called()
 
     def test_check_regex(self, capsys):
         namespace = Namespace(
@@ -224,8 +226,7 @@ class TestMain:
         mymock.__str__.return_value = "<file>"
         self.list_files_m.return_value = [mymock] * 20
 
-        with pytest.raises(SystemExit, match="0"):
-            main()
+        main()
 
         captured = capsys.readouterr()
         assert captured.err == ""
@@ -234,9 +235,20 @@ class TestMain:
         mymock.__str__.assert_called()  # pylint: disable=E1101
         assert mymock.__str__.call_count == 20  # pylint: disable=E1101
 
-        self.parse_args_m.assert_called_once_with()
-        self.list_files_m.assert_called_once_with("<root-path>", "<regex>")
         self.hid_main_m.assert_not_called()
+        self.list_files_m.assert_called_once_with("<root-path>", "<regex>")
+        self.parse_args_m.assert_called_once_with()
+        self.token_m.assert_not_called()
+
+    def test_gen_token(self):
+        self.parse_args_m.return_value = Namespace(command="gen-token")
+
+        main()
+
+        self.hid_main_m.assert_not_called()
+        self.list_files_m.assert_not_called()
+        self.parse_args_m.assert_called_once_with()
+        self.token_m.assert_called_once_with()
 
     def test_normal_execution(self):
         self.parse_args_m.return_value = Namespace(command=None)
@@ -244,8 +256,9 @@ class TestMain:
         main()
 
         self.hid_main_m.assert_called_once_with()
-        self.parse_args_m.assert_called_once_with()
         self.list_files_m.assert_not_called()
+        self.parse_args_m.assert_called_once_with()
+        self.token_m.assert_not_called()
 
 
 class TestParseArgs:
@@ -270,6 +283,11 @@ class TestParseArgs:
         self.set_args("")
         args = self.parse_args()
         assert vars(args) == {"command": None}
+
+    def test_gen_token(self):
+        self.set_args("gen-token")
+        args = self.parse_args()
+        assert vars(args) == {"command": "gen-token"}
 
     def test_check_regex_ok(self):
         self.set_args("check-regex '/path/to/root test/' .regex$")
