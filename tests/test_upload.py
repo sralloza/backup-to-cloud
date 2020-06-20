@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 
 from backup_to_cloud.exceptions import MultipleFilesError
-from backup_to_cloud.upload import backup
+from backup_to_cloud.upload import backup, save_new_file, save_version
 
 
 class TestBackup:
@@ -151,11 +151,52 @@ class TestBackup:
             assert result == self.new_ver_m.return_value
 
 
-@pytest.mark.skip
-def test_save_new_file():
-    assert 0, "Not implemented"
+@mock.patch("backup_to_cloud.upload.log")
+@mock.patch("backup_to_cloud.upload.MediaIoBaseUpload")
+def test_save_new_file(mibu_m, log_m):
+    gds = mock.MagicMock()
+    buffer = BytesIO(b"<file-data>")
+
+    result = save_new_file(gds, buffer, "<mimetype>", "<folder-id>", "<filename>")
+
+    log_m.assert_called_with("Saving new file: %s", "<filename>")
+
+    metadata = {
+        "name": "<filename>",
+        "mimeType": "<mimetype>",
+        "parents": "<folder-id>",
+    }
+    mibu_m.assert_called_once_with(buffer, mimetype="<mimetype>")
+    gds.files.assert_called_once_with()
+
+    files = gds.files.return_value
+    files.create.assert_called_once_with(
+        body=metadata, media_body=mibu_m.return_value, fields="id"
+    )
+    command = files.create.return_value
+    command.execute.assert_called_once_with()
+
+    assert result == command.execute.return_value
 
 
-@pytest.mark.skip
-def test_save_version():
-    assert 0, "Not implemented"
+@mock.patch("backup_to_cloud.upload.log")
+@mock.patch("backup_to_cloud.upload.MediaIoBaseUpload")
+def test_save_version(mibu_m, log_m):
+    gds = mock.MagicMock()
+    buffer = BytesIO(b"<file-data>")
+
+    result = save_version(gds, buffer, "<mimetype>", "<file-id>", "<filename>")
+
+    log_m.assert_called_with("Saving new version of %s", "<filename>")
+
+    mibu_m.assert_called_once_with(buffer, mimetype="<mimetype>")
+    gds.files.assert_called_once_with()
+
+    files = gds.files.return_value
+    files.update.assert_called_once_with(
+        fileId="<file-id>", keepRevisionForever=False, media_body=mibu_m.return_value
+    )
+    command = files.update.return_value
+    command.execute.assert_called_once_with()
+
+    assert result == command.execute.return_value
