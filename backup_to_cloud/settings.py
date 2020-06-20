@@ -1,5 +1,7 @@
+"""Handles the settings and the settings file (.settings.yml)."""
+
 from enum import Enum
-import warnings
+from typing import Dict, List
 
 from ruamel.yaml import YAML
 
@@ -8,6 +10,8 @@ from .paths import SETTINGS_PATH
 
 
 class EntryType(Enum):
+    """Valid types for BackupEntry."""
+
     multiple_files = "multiple-files"
     single_file = "single-file"
 
@@ -27,6 +31,29 @@ VALID_ATTRS = set(ATTRS_TYPES.keys())
 
 
 class BackupEntry:
+    """Represents an entry in .settings.yml
+
+    Args:
+        name (str): the name of the entry. It is irrelevant, only representative.
+        type (str): the entry type. Right now it can be `single-file` or
+            `multiple-files`.
+        root_path (str): if type is `single-file`, it represents the path of the
+            file. If type is `multiple-files`, it represents the root folder where
+            the sistem will start listing files.
+        cloud_folder_id (str, optional): id of the folder to save the file(s)
+            into. If is not present or is 'root', the files will be stored in
+            the root folder (`Drive`). Defaults to 'root'.
+        zip (bool, optional): If True and type is folder, all files will be uploaded as
+            zip. Defaults to False.
+        zipname (str, optional): if zip, this is the file name. Defaults to None.
+        filter (str): if the type is `multiple-files`, this regex filter will
+            be applied to every file located below `root-path`. The search it's
+            recursively. For example, to select all pdf files, use `filter=.py`.
+            By default is `'.'`, which is a regex for match anything. It is
+            encouraged to check the regex before creating the first backup.
+            To check the regex check README). Defaults to '.'.
+    """
+
     def __init__(
         self,
         name,
@@ -37,28 +64,6 @@ class BackupEntry:
         zipname=None,
         filter=".",
     ):
-        """Represents an entry in .settings.yml
-
-        Args:
-            name (str): the name of the entry. It is irrelevant, only representative.
-            type (str): the entry type. Right now it can be `single-file` or
-                `multiple-files`.
-            root_path (str): if type is `single-file`, it represents the path of the
-                file. If type is `multiple-files`, it represents the root folder where
-                the sistem will start listing files.
-            filter (str): if the type is `multiple-files`, this regex filter will
-                be applied to every file located below `root-path`. The search it's
-                recursively. For example, to select all pdf files, use `filter=.py`.
-                By default is `'.'`, which is a regex for match anything. It is
-                encouraged to check the regex before creating the first backup.
-                To check the regex check README). Defaults to '.'.
-            cloud_folder_id (str, optional): id of the folder to save the file(s)
-                into. If is not present or is 'root', the files will be stored in
-                the root folder (`Drive`). Defaults to 'root'.
-            zip (bool, optional): If True and type is folder, all files will be uploaded as
-                zip. Defaults to False.
-            zipname (str, optional): if zip, this is the file name. Defaults to None.
-        """
 
         self.name = name
         self.type = EntryType(type)
@@ -73,7 +78,13 @@ class BackupEntry:
         return f"BackupEntry(attrs={attrs})"
 
 
-def get_settings():
+def get_settings() -> List[BackupEntry]:
+    """Parses the settings file and returns a list of BackupEntries.
+
+    Returns:
+        List[BackupEntry]: backup entries parsed.
+    """
+
     settings_dict = YAML(typ="safe").load(SETTINGS_PATH.read_text())
 
     entries = []
@@ -83,7 +94,25 @@ def get_settings():
     return entries
 
 
-def check_yaml_entry(**yaml_entry):
+def check_yaml_entry(**yaml_entry: Dict[str, str]) -> Dict[str, str]:
+    """Checks the validity of the attributes of a backup entry.
+
+    Args:
+        **yaml_entry (Dict[str, str]): attributes of the yaml entry
+            that needs to be parsed.
+
+    Raises:
+        SettingsError: if any attribute is not defined.
+        SettingsError: if a required attribute is not defined.
+        TypeError: if the entry type is invalid.
+        TypeError: if any attribute it's not the type it should be.
+        SettingsError: if entry type is multiple-files, zip is True
+            and zipname is not defiend.
+
+    Returns:
+        Dict[str, str]: attributes parsed.
+    """
+
     result = {}
     keys = set()
     for key, value in yaml_entry.items():
