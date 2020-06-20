@@ -1,4 +1,4 @@
-<h2 align="center">backup-to-cloud: the automatic google drive backup manager</font></h2>
+<h1 align="center">backup-to-cloud: the google drive backup manager</font></h1>
 
 <p align="center">
 <a href="https://github.com/sralloza/backup-to-cloud/actions"><img alt="Actions Status" src="https://github.com/sralloza/backup-to-cloud/workflows/test/badge.svg"></a>
@@ -12,6 +12,15 @@
 </p>
 
 Simple app designed to upload backups to google drive. Settings are handled by a yml file and it's explained [here](#settings). Before using the app, you need to get some google drive credentials, expained [here](#credentials).
+
+<h3>Contents:</h3>
+
+- [Settings](#settings)
+  - [Examples](#examples)
+  - [Check regex](#check-regex)
+  - [Common filters](#common-filters)
+  - [Get folder's id](#get-folders-id)
+- [Credentials](#credentials)
 
 ## Settings
 
@@ -46,7 +55,7 @@ Explanation:
 - **cloud_folder_id**: id of the folder to save the file(s) into. If is not present or is `root`, the files will be stored in the root folder (`Drive`). More info for folder's id [here](#get-folders-id).
 - **filter**: if the type is `multiple-files`, this regex filter will be applied to every file located below `root-path`. The search it's recursively. For example, to select all pdf files, use `filter=.py`. By default is `'.'`, which is a regex for match anything. It is encouraged to check the regex before creating the first backup. To check the regex read [this](#check-regex). If all you want to do is just filter files by extension, read [this](#common-filters). To write advanced filters, try [this web](https://regex101.com).
 
-### Examples:
+### Examples
 
 Back up apache configuration: saves all files with `conf` extension and saves them as a zip with name `sites-available.zip`, in a specific folder.
 
@@ -80,13 +89,14 @@ If `root-path` contains spaces, quotes (`"/path with/spaces"`) must be used.
 
 ### Common filters
 
-One of the usages of the regex filter is filter by extension. In order to do so, write `filter=ext$` (where `ext` is the extension) in the settings file. The dollar symbol (*$*) means the end of the line. Without it, a file named `/folder/something.ext/invalid.pdf` would match the filter.
+One of the usages of the regex filter is filter by extension. In order to do so, write `filter=ext$` (where `ext` is the extension) in the settings file. The dollar symbol (_\$_) means the end of the line. Without it, a file named `/folder/something.ext/invalid.pdf` would match the filter.
 
 ### Get folder's id
 
 When opening the folder in the browser, the URL will look like `https://drive.google.com/drive/u/3/folders/<folder-id>`. The folder's id appears at the end of the URL. It has letters (lowercase and uppercase), numbers and hyphens.
 
 ## Credentials
+
 In order to use this app, you need to get some credentials from the google drive api. If you don't have any projects created, create one in [this link](https://console.developers.google.com/projectcreate). After having a project, you need to generate credentials to talk to the API. To do so, visit [this link](https://console.developers.google.com/apis/credentials). After creating the credentials, download them.
 
 ![download credentials](.github/help.png)
