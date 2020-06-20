@@ -273,6 +273,8 @@ def test_get_mimetype():
         == "application/vnd.openxmlformats-officedocument.spreadsheetml.template"
     )
     assert test("folder/file.xml") == "application/xml"
+    assert test("folder/file.yaml") == "application/x-yaml"
+    assert test("folder/file.yml") == "application/x-yaml"
     assert test("folder/file.zip") == "application/zip"
     assert test("folder/file.unkown") == "application/octet-stream"
 
