@@ -178,7 +178,8 @@ class TestGetCredsFromToken:
             )
 
 
-def test_get_mimetype():
+@mock.patch("backup_to_cloud.utils.log")
+def test_get_mimetype(log_m):
     test = get_mimetype
     assert test("folder/file.arj") == "application/arj"
     assert test("folder/file.bmp") == "image/x-ms-bmp"
@@ -277,6 +278,8 @@ def test_get_mimetype():
     assert test("folder/file.yml") == "application/x-yaml"
     assert test("folder/file.zip") == "application/zip"
     assert test("folder/file.unkown") == "application/octet-stream"
+
+    assert log_m.call_count == 55
 
 
 @mock.patch("backup_to_cloud.utils.walk")
