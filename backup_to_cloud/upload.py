@@ -44,15 +44,12 @@ def backup(file_data: FileData, mimetype, folder, filename=None):
 
     if ids:
         return save_version(service, file_data, mimetype, ids[0], filename)
-    return save_new_file(service, file_data, mimetype, folder, filename)
+    return save_new_file(service, file_data, mimetype, folder_id, filename)
 
 
-def save_new_file(gds, file_data: BytesIO, mimetype, folder=None, filename=None):
-    log("saving new file: %s", filename)
-    file_metadata = {"name": filename, "mimeType": mimetype}
-
-    if folder:
-        file_metadata["parents"] = [folder]
+def save_new_file(gds, file_data: BytesIO, mimetype, folder_id, filename=None):
+    log("Saving new file: %s", filename)
+    file_metadata = {"name": filename, "mimeType": mimetype, "parents": folder_id}
 
     media = MediaIoBaseUpload(file_data, mimetype=mimetype)
     res = (
