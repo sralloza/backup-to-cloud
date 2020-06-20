@@ -1,4 +1,4 @@
-name: lint
+name: lint-black
 
 on:
   push
@@ -20,6 +20,9 @@ jobs:
         pip install black
         pip install -r requirements.txt
         pip install -e .
-    - name: Lint with black
+    - name: Lint with black module
       run: |
         black --diff --check backup_to_cloud
+    - name: Lint with black tests
+      run: |
+        black --diff --check tests
