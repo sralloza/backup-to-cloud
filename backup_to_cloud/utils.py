@@ -25,6 +25,8 @@ _EXTRA_MIME_TYPES = (
     ("application/x-rar-compressed", ".rar"),
     ("application/x-sqlite3", ".db"),
     ("application/x-sqlite3", ".sqlite"),
+    ("application/x-yaml", ".yaml"),
+    ("application/x-yaml", ".yml"),
     ("application/xml", ".xml"),
     ("application/zip", ".zip"),
     ("image/x-ms-bmp", ".bmp"),
@@ -92,7 +94,9 @@ def get_mimetype(filepath: str) -> str:
         str: mimetype of `filepath`.
     """
 
-    return mimetypes.guess_type(filepath)[0] or "application/octet-stream"
+    mime_type = mimetypes.guess_type(filepath)[0] or "application/octet-stream"
+    log("Mimetype of %r is %r", filepath, mime_type)
+    return mime_type
 
 
 def _improve_mimetypes():

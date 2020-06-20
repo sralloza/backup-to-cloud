@@ -2,6 +2,10 @@ class BackupError(Exception):
     pass
 
 
+class MultipleFilesError(BackupError):
+    pass
+
+
 class NoFilesFoundError(BackupError):
     pass
 

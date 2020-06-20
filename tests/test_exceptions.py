@@ -2,6 +2,7 @@ import pytest
 
 from backup_to_cloud.exceptions import (
     BackupError,
+    MultipleFilesError,
     NoFilesFoundError,
     SettingsError,
     TokenError,
@@ -17,6 +18,17 @@ class TestBackupError:
     def test_raises(self):
         with pytest.raises(BackupError):
             raise BackupError
+
+
+class TestMultipleFilesError:
+    def test_inheritance(self):
+        exc = MultipleFilesError()
+        assert isinstance(exc, MultipleFilesError)
+        assert isinstance(exc, BackupError)
+
+    def test_raises(self):
+        with pytest.raises(MultipleFilesError):
+            raise MultipleFilesError
 
 
 class TestNoFilesFoundError:
