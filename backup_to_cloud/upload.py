@@ -10,7 +10,7 @@ from .utils import get_google_drive_services, log
 FileData = Union[Path, str, BytesIO]
 
 
-def backup(file_data: FileData, mimetype, folder, filename=None):
+def backup(file_data: FileData, mimetype, folder_id, filename=None):
     if isinstance(file_data, (str, Path)):
         filepath = Path(file_data)
         if not filepath.exists():
@@ -28,7 +28,7 @@ def backup(file_data: FileData, mimetype, folder, filename=None):
             raise exc
 
     service = get_google_drive_services()
-    query = f"name = {filename!r} and {folder!r} in parents"
+    query = f"name = {filename!r} and {folder_id!r} in parents"
 
     response = service.files().list(q=query, fields="files(id, name)").execute()
     ids = [x.get("id") for x in response.get("files", [])]
