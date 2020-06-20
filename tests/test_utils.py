@@ -72,7 +72,17 @@ class TestGenNewToken:
         yield
         mock.patch.stopall()
 
-    def test_gen_new_token(self):
+    @pytest.mark.parametrize("exists", [True, False])
+    def test_gen_new_token(self, exists):
+        self.creds_path_m.exists.return_value = exists
+        self.creds_path_m.as_posix.return_value = "<creds-path>"
+
+        if not exists:
+            with pytest.raises(FileNotFoundError, match="<creds-path>"):
+                gen_new_token()
+            self.fcsf_m.assert_not_called()
+            return
+
         gen_new_token()
 
         self.fcsf_m.assert_called_once_with(

@@ -62,6 +62,9 @@ def log(template: Logable, *args: Any):
 def gen_new_token():
     """Generates a new token."""
 
+    if not CREDENTIALS_PATH.exists():
+        raise FileNotFoundError(CREDENTIALS_PATH.as_posix())
+
     flow = InstalledAppFlow.from_client_secrets_file(
         CREDENTIALS_PATH.as_posix(), SCOPES
     )
