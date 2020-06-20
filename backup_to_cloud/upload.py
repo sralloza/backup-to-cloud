@@ -62,20 +62,11 @@ def save_new_file(gds, file_data: BytesIO, mimetype, folder=None, filename=None)
 
 
 def save_version(gds, file_data: BytesIO, mimetype, file_id: str, filename=None):
-    log("saving new version of %s", filename)
-    file_metadata = {
-        "name": filename,
-        "published": True,
-    }
+    log("Saving new version of %s", filename)
     media = MediaIoBaseUpload(file_data, mimetype=mimetype)
     response = (
         gds.files()
-        .update(
-            fileId=file_id,
-            keepRevisionForever=False,
-            body=file_metadata,
-            media_body=media,
-        )
+        .update(fileId=file_id, keepRevisionForever=False, media_body=media,)
         .execute()
     )
 
