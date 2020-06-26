@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - New files were uploaded to the `root` folder regardless of setting `cloud-folder-id`.
 - Ensure mimetype of `.toml` files.
+- Ensure mimetype of `.sh` files to `application/x-sh`, as [Mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) specifies.
 
 ## [2.0.0] - 2020-06-20
 

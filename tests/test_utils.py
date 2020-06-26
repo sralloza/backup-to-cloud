@@ -259,6 +259,7 @@ def test_get_mimetype(log_m):
     assert test("folder/file.py") == "text/x-python"
     assert test("folder/file.pyc") == "application/x-python-code"
     assert test("folder/file.rar") == "application/x-rar-compressed"
+    assert test("folder/file.sh") == "application/x-sh"
     assert test("folder/file.sqlite") == "application/x-sqlite3"
     assert test("folder/file.swf") == "application/x-shockwave-flash"
     assert test("folder/file.tar") == "application/x-tar"
@@ -290,7 +291,7 @@ def test_get_mimetype(log_m):
     assert test("folder/file.zip") == "application/zip"
     assert test("folder/file.unknown") == "application/octet-stream"
 
-    assert log_m.call_count == 56
+    assert log_m.call_count == 57
 
 
 @mock.patch("backup_to_cloud.utils.walk")
