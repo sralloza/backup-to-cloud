@@ -89,7 +89,7 @@ def save_new_file(
     """
 
     log("Saving new file: %s", filename)
-    file_metadata = {"name": filename, "mimeType": mimetype, "parents": folder_id}
+    file_metadata = {"name": filename, "mimeType": mimetype, "parents": [folder_id]}
 
     media = MediaIoBaseUpload(file_data, mimetype=mimetype)
     res = (

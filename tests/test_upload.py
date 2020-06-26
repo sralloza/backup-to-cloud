@@ -61,7 +61,7 @@ class TestBackup:
             response["files"] = [id_m] * nids
         files.list.return_value.execute.return_value = response
 
-        mimetype = None
+        mimetype = "<mimetype>"
         result = None
         folder_id = "<folder-id>"
 
@@ -164,7 +164,7 @@ def test_save_new_file(mibu_m, log_m):
     metadata = {
         "name": "<filename>",
         "mimeType": "<mimetype>",
-        "parents": "<folder-id>",
+        "parents": ["<folder-id>"],
     }
     mibu_m.assert_called_once_with(buffer, mimetype="<mimetype>")
     gds.files.assert_called_once_with()
