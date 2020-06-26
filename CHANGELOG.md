@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - New files were uploaded to the `root` folder regardless of setting `cloud-folder-id`.
+- Ensure mimetype of `.toml` files.
 
 ## [2.0.0] - 2020-06-20
 

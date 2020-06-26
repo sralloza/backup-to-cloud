@@ -30,6 +30,7 @@ _EXTRA_MIME_TYPES = (
     ("application/x-sqlite3", ".sqlite"),
     ("application/x-yaml", ".yaml"),
     ("application/x-yaml", ".yml"),
+    ("application/toml", ".toml"),
     ("application/xml", ".xml"),
     ("application/zip", ".zip"),
     ("image/x-ms-bmp", ".bmp"),
