@@ -262,6 +262,7 @@ def test_get_mimetype(log_m):
     assert test("folder/file.sqlite") == "application/x-sqlite3"
     assert test("folder/file.swf") == "application/x-shockwave-flash"
     assert test("folder/file.tar") == "application/x-tar"
+    assert test("folder/file.toml") == "application/toml"
     assert test("folder/file.txt") == "text/plain"
     assert test("folder/file.xla") == "application/vnd.ms-excel"
     assert test("folder/file.xlam") == "application/vnd.ms-excel.addin.macroEnabled.12"
@@ -287,9 +288,9 @@ def test_get_mimetype(log_m):
     assert test("folder/file.yaml") == "application/x-yaml"
     assert test("folder/file.yml") == "application/x-yaml"
     assert test("folder/file.zip") == "application/zip"
-    assert test("folder/file.unkown") == "application/octet-stream"
+    assert test("folder/file.unknown") == "application/octet-stream"
 
-    assert log_m.call_count == 55
+    assert log_m.call_count == 56
 
 
 @mock.patch("backup_to_cloud.utils.walk")
