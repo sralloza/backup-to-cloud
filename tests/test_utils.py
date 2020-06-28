@@ -188,110 +188,180 @@ class TestGetCredsFromToken:
             )
 
 
-@mock.patch("backup_to_cloud.utils.log")
-def test_get_mimetype(log_m):
-    test = get_mimetype
-    assert test("folder/file.arj") == "application/arj"
-    assert test("folder/file.bmp") == "image/x-ms-bmp"
-    assert test("folder/file.cab") == "application/cab"
-    assert test("folder/file.csv") == "text/csv"
-    assert test("folder/file.db") == "application/x-sqlite3"
-    assert test("folder/file.doc") == "application/msword"
-    assert test("folder/file.doc") == "application/msword"
-    assert (
-        test("folder/file.docm") == "application/vnd.ms-word.document.macroEnabled.12"
-    )
-    assert (
-        test("folder/file.docx")
-        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
-    assert test("folder/file.dot") == "application/msword"
-    assert (
-        test("folder/file.dotm") == "application/vnd.ms-word.template.macroEnabled.12"
-    )
-    assert (
-        test("folder/file.dotx")
-        == "application/vnd.openxmlformats-officedocument.wordprocessingml.template"
-    )
-    assert test("folder/file.gif") == "image/gif"
-    assert test("folder/file.htm") == "text/html"
-    assert test("folder/file.html") == "text/html"
-    assert test("folder/file.jpg") == "image/jpeg"
-    assert test("folder/file.js") == "application/javascript"
-    assert test("folder/file.mdb") == "application/x-msaccess"
-    assert test("folder/file.mp3") == "audio/mpeg"
-    assert test("folder/file.ods") == "application/vnd.oasis.opendocument.spreadsheet"
-    assert test("folder/file.pdf") == "application/pdf"
-    assert test("folder/file.php") == "text/x-php"
-    assert test("folder/file.png") == "image/png"
-    assert test("folder/file.pot") == "application/vnd.ms-powerpoint"
-    assert (
-        test("folder/file.potm")
-        == "application/vnd.ms-powerpoint.template.macroEnabled.12"
-    )
-    assert (
-        test("folder/file.potx")
-        == "application/vnd.openxmlformats-officedocument.presentationml.template"
-    )
-    assert test("folder/file.ppa") == "application/vnd.ms-powerpoint"
-    assert (
-        test("folder/file.ppam")
-        == "application/vnd.ms-powerpoint.addin.macroEnabled.12"
-    )
-    assert test("folder/file.pps") == "application/vnd.ms-powerpoint"
-    assert (
-        test("folder/file.ppsm")
-        == "application/vnd.ms-powerpoint.slideshow.macroEnabled.12"
-    )
-    assert (
-        test("folder/file.ppsx")
-        == "application/vnd.openxmlformats-officedocument.presentationml.slideshow"
-    )
-    assert test("folder/file.ppt") == "application/vnd.ms-powerpoint"
-    assert (
-        test("folder/file.pptm")
-        == "application/vnd.ms-powerpoint.presentation.macroEnabled.12"
-    )
-    assert (
-        test("folder/file.pptx")
-        == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    )
-    assert test("folder/file.py") == "text/x-python"
-    assert test("folder/file.pyc") == "application/x-python-code"
-    assert test("folder/file.rar") == "application/x-rar-compressed"
-    assert test("folder/file.sh") == "application/x-sh"
-    assert test("folder/file.sqlite") == "application/x-sqlite3"
-    assert test("folder/file.swf") == "application/x-shockwave-flash"
-    assert test("folder/file.tar") == "application/x-tar"
-    assert test("folder/file.toml") == "application/toml"
-    assert test("folder/file.txt") == "text/plain"
-    assert test("folder/file.xla") == "application/vnd.ms-excel"
-    assert test("folder/file.xlam") == "application/vnd.ms-excel.addin.macroEnabled.12"
-    assert test("folder/file.xls") == "application/vnd.ms-excel"
-    assert (
-        test("folder/file.xlsb")
-        == "application/vnd.ms-excel.sheet.binary.macroEnabled.12"
-    )
-    assert test("folder/file.xlsm") == "application/vnd.ms-excel.sheet.macroEnabled.12"
-    assert (
-        test("folder/file.xlsx")
-        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    assert test("folder/file.xlt") == "application/vnd.ms-excel"
-    assert (
-        test("folder/file.xltm") == "application/vnd.ms-excel.template.macroEnabled.12"
-    )
-    assert (
-        test("folder/file.xltx")
-        == "application/vnd.openxmlformats-officedocument.spreadsheetml.template"
-    )
-    assert test("folder/file.xml") == "application/xml"
-    assert test("folder/file.yaml") == "application/x-yaml"
-    assert test("folder/file.yml") == "application/x-yaml"
-    assert test("folder/file.zip") == "application/zip"
-    assert test("folder/file.unknown") == "application/octet-stream"
+class TestMimeType:
+    @pytest.fixture(autouse=True)
+    def mocks(self):
+        self.path_m = mock.patch("backup_to_cloud.utils.Path").start()
+        self.log_m = mock.patch("backup_to_cloud.utils.log").start()
 
-    assert log_m.call_count == 57
+        self.not_in_db_filename = "folder/filename.weird-extension"
+        self.log_template = "Mimetype of %r is %r [%s]"
+
+        yield
+
+        mock.patch.stopall()
+
+    def test_database(self):
+        test = get_mimetype
+        assert test("folder/file.arj") == "application/arj"
+        assert test("folder/file.bmp") == "image/x-ms-bmp"
+        assert test("folder/file.cab") == "application/cab"
+        assert test("folder/file.csv") == "text/csv"
+        assert test("folder/file.db") == "application/x-sqlite3"
+        assert test("folder/file.doc") == "application/msword"
+        assert test("folder/file.doc") == "application/msword"
+        assert (
+            test("folder/file.docm")
+            == "application/vnd.ms-word.document.macroEnabled.12"
+        )
+        assert (
+            test("folder/file.docx")
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+        assert test("folder/file.dot") == "application/msword"
+        assert (
+            test("folder/file.dotm")
+            == "application/vnd.ms-word.template.macroEnabled.12"
+        )
+        assert (
+            test("folder/file.dotx")
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+        )
+        assert test("folder/file.gif") == "image/gif"
+        assert test("folder/file.htm") == "text/html"
+        assert test("folder/file.html") == "text/html"
+        assert test("folder/file.jpg") == "image/jpeg"
+        assert test("folder/file.js") == "application/javascript"
+        assert test("folder/file.mdb") == "application/x-msaccess"
+        assert test("folder/file.mp3") == "audio/mpeg"
+        assert (
+            test("folder/file.ods") == "application/vnd.oasis.opendocument.spreadsheet"
+        )
+        assert test("folder/file.pdf") == "application/pdf"
+        assert test("folder/file.php") == "text/x-php"
+        assert test("folder/file.png") == "image/png"
+        assert test("folder/file.pot") == "application/vnd.ms-powerpoint"
+        assert (
+            test("folder/file.potm")
+            == "application/vnd.ms-powerpoint.template.macroEnabled.12"
+        )
+        assert (
+            test("folder/file.potx")
+            == "application/vnd.openxmlformats-officedocument.presentationml.template"
+        )
+        assert test("folder/file.ppa") == "application/vnd.ms-powerpoint"
+        assert (
+            test("folder/file.ppam")
+            == "application/vnd.ms-powerpoint.addin.macroEnabled.12"
+        )
+        assert test("folder/file.pps") == "application/vnd.ms-powerpoint"
+        assert (
+            test("folder/file.ppsm")
+            == "application/vnd.ms-powerpoint.slideshow.macroEnabled.12"
+        )
+        assert (
+            test("folder/file.ppsx")
+            == "application/vnd.openxmlformats-officedocument.presentationml.slideshow"
+        )
+        assert test("folder/file.ppt") == "application/vnd.ms-powerpoint"
+        assert (
+            test("folder/file.pptm")
+            == "application/vnd.ms-powerpoint.presentation.macroEnabled.12"
+        )
+        assert (
+            test("folder/file.pptx")
+            == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        )
+        assert test("folder/file.py") == "text/x-python"
+        assert test("folder/file.pyc") == "application/x-python-code"
+        assert test("folder/file.rar") == "application/x-rar-compressed"
+        assert test("folder/file.sh") == "application/x-sh"
+        assert test("folder/file.sqlite") == "application/x-sqlite3"
+        assert test("folder/file.swf") == "application/x-shockwave-flash"
+        assert test("folder/file.tar") == "application/x-tar"
+        assert test("folder/file.toml") == "application/toml"
+        assert test("folder/file.txt") == "text/plain"
+        assert test("folder/file.xla") == "application/vnd.ms-excel"
+        assert (
+            test("folder/file.xlam") == "application/vnd.ms-excel.addin.macroEnabled.12"
+        )
+        assert test("folder/file.xls") == "application/vnd.ms-excel"
+        assert (
+            test("folder/file.xlsb")
+            == "application/vnd.ms-excel.sheet.binary.macroEnabled.12"
+        )
+        assert (
+            test("folder/file.xlsm") == "application/vnd.ms-excel.sheet.macroEnabled.12"
+        )
+        assert (
+            test("folder/file.xlsx")
+            == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        assert test("folder/file.xlt") == "application/vnd.ms-excel"
+        assert (
+            test("folder/file.xltm")
+            == "application/vnd.ms-excel.template.macroEnabled.12"
+        )
+        assert (
+            test("folder/file.xltx")
+            == "application/vnd.openxmlformats-officedocument.spreadsheetml.template"
+        )
+        assert test("folder/file.xml") == "application/xml"
+        assert test("folder/file.yaml") == "application/x-yaml"
+        assert test("folder/file.yml") == "application/x-yaml"
+        assert test("folder/file.zip") == "application/zip"
+
+        assert self.log_m.call_count == 56
+        for call in self.log_m.call_args_list:
+            assert call[0][3] == "database"
+
+        self.path_m.assert_not_called()
+
+    def test_not_in_db_exists_text(self):
+        self.path_m.return_value.is_file.return_value = True
+        self.path_m.return_value.read_bytes.return_value = "áéíóúñ€".encode()
+
+        mime_type = get_mimetype(self.not_in_db_filename)
+        assert mime_type == "text/plain"
+        self.log_m.assert_called_once_with(
+            self.log_template, self.not_in_db_filename, "text/plain", "plain content"
+        )
+        self.path_m.assert_called_once_with(self.not_in_db_filename)
+        self.path_m.return_value.is_file.assert_called_once_with()
+        self.path_m.return_value.read_bytes.assert_called_once_with()
+
+    def test_not_in_db_exists_bytes(self):
+        self.path_m.return_value.is_file.return_value = True
+        self.path_m.return_value.read_bytes.return_value = bytes.fromhex(
+            "02 05 06 07 a5"
+        )
+
+        mime_type = get_mimetype(self.not_in_db_filename)
+        assert mime_type == "application/octet-stream"
+        self.log_m.assert_called_once_with(
+            self.log_template,
+            self.not_in_db_filename,
+            "application/octet-stream",
+            "unknown content",
+        )
+        self.path_m.assert_called_once_with(self.not_in_db_filename)
+        self.path_m.return_value.is_file.assert_called_once_with()
+        self.path_m.return_value.read_bytes.assert_called_once_with()
+
+    def test_not_in_db_not_exists(self):
+        self.path_m.return_value.is_file.return_value = False
+
+        mime_type = get_mimetype(self.not_in_db_filename)
+        assert mime_type == "application/octet-stream"
+        self.log_m.assert_called_once_with(
+            self.log_template,
+            self.not_in_db_filename,
+            "application/octet-stream",
+            "file not found",
+        )
+        self.path_m.assert_called_once_with(self.not_in_db_filename)
+        self.path_m.return_value.is_file.assert_called_once_with()
+        self.path_m.return_value.read_bytes.assert_not_called()
 
 
 @mock.patch("backup_to_cloud.utils.walk")
