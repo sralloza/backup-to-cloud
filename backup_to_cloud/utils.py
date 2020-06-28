@@ -133,8 +133,24 @@ def get_mimetype(filepath: str) -> str:
         str: mimetype of `filepath`.
     """
 
-    mime_type = mimetypes.guess_type(filepath)[0] or "application/octet-stream"
-    log("Mimetype of %r is %r", filepath, mime_type)
+    mime_type = mimetypes.guess_type(filepath)[0]
+    reason = "database"
+
+    if not mime_type:
+        path = Path(filepath)
+        if not path.is_file():
+            reason = "file not found"
+            mime_type = "application/octet-stream"
+        else:
+            try:
+                path.read_bytes().decode()
+                mime_type = "text/plain"
+                reason = "plain content"
+            except UnicodeDecodeError:
+                mime_type = "application/octet-stream"
+                reason = "unknown content"
+
+    log("Mimetype of %r is %r [%s]", filepath, mime_type, reason)
     return mime_type
 
 
