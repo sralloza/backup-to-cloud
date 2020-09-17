@@ -16,5 +16,5 @@ setup(
             "btc=backup_to_cloud.main:main",
         ],
     },
-    install_requires=requirements
+    install_requires=requirements,
 )
