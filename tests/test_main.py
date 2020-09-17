@@ -1,17 +1,15 @@
-from argparse import Namespace
 import random
-import shlex
 from unittest import mock
 
 import pytest
 
 from backup_to_cloud.exceptions import NoFilesFoundError, SettingsError
-from backup_to_cloud.main import _main, main, parse_args
+from backup_to_cloud.main import create_backup
 from backup_to_cloud.settings import BackupEntry
 from backup_to_cloud.utils import ZIP_MIMETYPE
 
 
-class TestHiddenMain:
+class TestCreateBackup:
     @pytest.fixture(autouse=True)
     def mocks(self):
         self.backup_m = mock.patch("backup_to_cloud.main.backup").start()
@@ -31,7 +29,7 @@ class TestHiddenMain:
         self.get_settings_m.return_value = [entry]
         self.get_mt_m.return_value = "<mimetype>"
 
-        _main()
+        create_backup()
 
         self.backup_m.assert_not_called()
         self.get_mt_m.assert_not_called()
@@ -44,7 +42,7 @@ class TestHiddenMain:
         self.get_settings_m.return_value = [entry]
         self.get_mt_m.return_value = "<mimetype>"
 
-        _main()
+        create_backup()
 
         self.backup_m.assert_called_once_with(
             "/home/file.pdf", "<mimetype>", "<folder-id>"
@@ -64,7 +62,7 @@ class TestHiddenMain:
         self.get_settings_m.return_value = entries
         self.get_mt_m.return_value = "<mimetype>"
 
-        _main()
+        create_backup()
 
         self.get_settings_m.assert_called_once_with()
         self.list_files_m.assert_not_called()
@@ -99,7 +97,7 @@ class TestHiddenMain:
         self.get_mt_m.return_value = "<mimetype>"
 
         with pytest.raises(SettingsError, match="Invalid EntryType: '<invalid-type>'"):
-            _main()
+            create_backup()
 
         self.backup_m.assert_not_called()
         self.bytesio_m.assert_not_called()
@@ -123,7 +121,7 @@ class TestHiddenMain:
         with pytest.raises(
             NoFilesFoundError, match="No files found for entry '<name>'"
         ):
-            _main()
+            create_backup()
 
         self.backup_m.assert_not_called()
         self.get_mt_m.assert_not_called()
@@ -150,7 +148,7 @@ class TestHiddenMain:
             "/home/test/trash/unused/delete.py",
         ]
 
-        _main()
+        create_backup()
 
         zipfile_m = self.zipfile_m.return_value.__enter__.return_value
         for file in self.list_files_m.return_value:
@@ -179,7 +177,7 @@ class TestHiddenMain:
             "/home/test/trash/unused/delete.py",
         ]
 
-        _main()
+        create_backup()
 
         assert self.backup_m.call_count == 4
         assert self.get_mt_m.call_count == 4
@@ -191,129 +189,3 @@ class TestHiddenMain:
         self.bytesio_m.assert_not_called()
         self.get_settings_m.assert_called_once_with()
         self.list_files_m.called_once_with()
-
-
-class TestMain:
-    @pytest.fixture(autouse=True)
-    def mocks(self):
-        self.hid_main_m = mock.patch("backup_to_cloud.main._main").start()
-        self.list_files_m = mock.patch("backup_to_cloud.main.list_files").start()
-        self.parse_args_m = mock.patch("backup_to_cloud.main.parse_args").start()
-        self.token_m = mock.patch("backup_to_cloud.main.gen_new_token").start()
-
-        yield
-
-        mock.patch.stopall()
-
-    def test_fail(self):
-        self.parse_args_m.side_effect = SystemExit
-
-        with pytest.raises(SystemExit):
-            main()
-
-        self.hid_main_m.assert_not_called()
-        self.list_files_m.assert_not_called()
-        self.parse_args_m.assert_called_once_with()
-        self.token_m.assert_not_called()
-
-    def test_check_regex(self, capsys):
-        namespace = Namespace(
-            **{"command": "check-regex", "root-path": "<root-path>", "regex": "<regex>"}
-        )
-        self.parse_args_m.return_value = namespace
-
-        mymock = mock.MagicMock()
-        mymock.__str__.return_value = "<file>"
-        self.list_files_m.return_value = [mymock] * 20
-
-        main()
-
-        captured = capsys.readouterr()
-        assert captured.err == ""
-        assert captured.out == "<file>\n" * 20
-
-        mymock.__str__.assert_called()  # pylint: disable=E1101
-        assert mymock.__str__.call_count == 20  # pylint: disable=E1101
-
-        self.hid_main_m.assert_not_called()
-        self.list_files_m.assert_called_once_with("<root-path>", "<regex>")
-        self.parse_args_m.assert_called_once_with()
-        self.token_m.assert_not_called()
-
-    def test_gen_token(self):
-        self.parse_args_m.return_value = Namespace(command="gen-token")
-
-        main()
-
-        self.hid_main_m.assert_not_called()
-        self.list_files_m.assert_not_called()
-        self.parse_args_m.assert_called_once_with()
-        self.token_m.assert_called_once_with()
-
-    def test_normal_execution(self):
-        self.parse_args_m.return_value = Namespace(command=None)
-
-        main()
-
-        self.hid_main_m.assert_called_once_with()
-        self.list_files_m.assert_not_called()
-        self.parse_args_m.assert_called_once_with()
-        self.token_m.assert_not_called()
-
-
-class TestParseArgs:
-    @pytest.fixture(autouse=True)
-    def mocks(self):
-        self.sys_argv_m = mock.patch("sys.argv").start()
-        yield
-        mock.patch.stopall()
-
-    def set_args(self, args):
-        real_args = ["test.py"] + shlex.split(args)
-        self.sys_argv_m.__getitem__.side_effect = lambda s: real_args[s]
-
-    def parse_args(self):
-        try:
-            args = parse_args()
-            return args
-        finally:
-            self.sys_argv_m.__getitem__.assert_called_once_with(slice(1, None, None))
-
-    def test_none(self):
-        self.set_args("")
-        args = self.parse_args()
-        assert vars(args) == {"command": None}
-
-    def test_gen_token(self):
-        self.set_args("gen-token")
-        args = self.parse_args()
-        assert vars(args) == {"command": "gen-token"}
-
-    def test_check_regex_ok(self):
-        self.set_args("check-regex '/path/to/root test/' .regex$")
-        args = self.parse_args()
-        assert vars(args) == {
-            "command": "check-regex",
-            "root-path": "/path/to/root test/",
-            "regex": ".regex$",
-        }
-
-    def test_check_regex_ok_no_regex(self):
-        self.set_args("check-regex '/path/to/root test/'")
-        args = self.parse_args()
-        assert vars(args) == {
-            "command": "check-regex",
-            "root-path": "/path/to/root test/",
-            "regex": ".",
-        }
-
-    def test_check_regex_fail_no_path(self, capsys):
-        self.set_args("check-regex")
-
-        with pytest.raises(SystemExit):
-            self.parse_args()
-
-        captured = capsys.readouterr()
-        assert captured.out == ""
-        assert "usage" in captured.err
-        assert "error: the following arguments are required: root-path" in captured.err

@@ -1,4 +1,4 @@
-from backup_to_cloud.main import main
+from backup_to_cloud.cli import cli
 
 if __name__ == "__main__":
-    main()
+    cli()
