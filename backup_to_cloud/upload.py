@@ -118,7 +118,7 @@ def save_version(
     media = MediaIoBaseUpload(file_data, mimetype=mimetype)
     response = (
         gds.files()
-        .update(fileId=file_id, keepRevisionForever=False, media_body=media,)
+        .update(fileId=file_id, keepRevisionForever=False, media_body=media)
         .execute()
     )
 
