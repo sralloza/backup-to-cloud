@@ -13,7 +13,13 @@ from .utils import get_google_drive_services, log
 FD = Union[Path, str, BytesIO]
 
 
-def backup(file_data: FD, mimetype: str, folder_id: str, filename: str = None) -> dict:
+def backup(
+    file_data: FD,
+    mimetype: str,
+    folder_id: str,
+    filename: str = None,
+    dry_run: bool = False,
+) -> dict:
     """Backups the file.
 
     Args:
@@ -25,6 +31,8 @@ def backup(file_data: FD, mimetype: str, folder_id: str, filename: str = None) -
             To select the root folder, put `folder_id='root`.
         filename (str, optional): name of the file. If None, the filename will be
             generated from the filepath (if `file_data` is str or Path). Defaults to None.
+        dry_run (bool, optional): if True, it won't upload anything to google
+            drive. Designed to check settings. Defaults to True.
 
     Raises:
         FileNotFoundError: if `file_data` is str or Path and the filepath doesn't exist.
@@ -66,6 +74,9 @@ def backup(file_data: FD, mimetype: str, folder_id: str, filename: str = None) -
         exc = MultipleFilesError(msg)
         log(exc)
         raise exc
+
+    if dry_run:
+        return {"status": "dry-run"}
 
     if ids:
         return save_version(service, file_data, mimetype, ids[0], filename)

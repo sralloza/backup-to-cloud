@@ -3,7 +3,7 @@
 import click
 
 from .utils import gen_new_token, list_files
-from .main import create_backup
+from .main import check_settings, create_backup
 
 CTX_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -36,6 +36,13 @@ def create_backup_command():
     """Creates a backup and uploads it to google drive"""
 
     create_backup()
+
+
+@main.command("check-settings")
+def check_settings_command():
+    """Checks settings"""
+
+    check_settings()
 
 
 def cli():
