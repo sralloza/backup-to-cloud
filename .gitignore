@@ -195,3 +195,4 @@ $RECYCLE.BIN/
 *.pickle
 
 automatic.yml
+!scripts/
