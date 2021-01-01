@@ -194,4 +194,4 @@ $RECYCLE.BIN/
 *.json
 *.pickle
 
-.settings.yml
+automatic.yml

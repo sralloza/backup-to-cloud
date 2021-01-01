@@ -3,15 +3,15 @@ from unittest import mock
 
 import pytest
 
-from backup_to_cloud.exceptions import SettingsError
-from backup_to_cloud.settings import (
+from backup_to_cloud.automatic import (
     ATTRS_TYPES,
+    REQUIRED_ATTRS,
     BackupEntry,
     EntryType,
-    REQUIRED_ATTRS,
     check_yaml_entry,
-    get_settings,
+    get_automatic_entries,
 )
+from backup_to_cloud.exceptions import AutomaticEntryError
 
 
 class TestBackupEntry:
@@ -53,18 +53,18 @@ class TestBackupEntry:
         assert repr(entry) == "BackupEntry(attrs=%s)" % attrs
 
 
-class TestGetSettings:
+class TestGetAuto:
     @pytest.fixture(autouse=True)
     def mocks(self):
-        self.set_path_m = mock.patch("backup_to_cloud.settings.SETTINGS_PATH").start()
-        self.check_m = mock.patch("backup_to_cloud.settings.check_yaml_entry").start()
-        self.be_m = mock.patch("backup_to_cloud.settings.BackupEntry").start()
+        self.settings_m = mock.patch("backup_to_cloud.automatic.settings").start()
+        self.check_m = mock.patch("backup_to_cloud.automatic.check_yaml_entry").start()
+        self.be_m = mock.patch("backup_to_cloud.automatic.BackupEntry").start()
         yield
         mock.patch.stopall()
 
-    def test_get_settings(self):
+    def test_get_auto(self):
         self.check_m.return_value = {"a": 1, "b": 2, "c": 3}
-        self.set_path_m.read_text.return_value = (
+        self.settings_m.automatic_path.read_text.return_value = (
             "name1:\n  type: <type1>\n  zip: true\n  root-path: <path1>\n  "
             "zipname: <zipname1>\n  cloud-folder-id: <folder-id1>\n  filter:"
             " .\n\nname2:\n  type: <type2>\n  zip: false\n  root-path: "
@@ -91,14 +91,14 @@ class TestGetSettings:
             "filter": "*.pdf",
         }
 
-        settings = get_settings()
+        auto = get_automatic_entries()
 
         self.check_m.assert_any_call(**dict1)
         self.check_m.assert_any_call(**dict2)
         self.be_m.assert_any_call(a=1, b=2, c=3)
         self.be_m.assert_any_call(a=1, b=2, c=3)
 
-        assert settings == [self.be_m.return_value] * 2
+        assert auto == [self.be_m.return_value] * 2
 
 
 class TestCheckYamlEntry:
@@ -118,7 +118,9 @@ class TestCheckYamlEntry:
 
     def test_invalid_attrs(self, attrs):
         attrs["invalid"] = True
-        with pytest.raises(SettingsError, match=r"'invalid' is not a valid attribute"):
+        with pytest.raises(
+            AutomaticEntryError, match=r"'invalid' is not a valid attribute"
+        ):
             check_yaml_entry(**attrs)
 
     @pytest.mark.parametrize("missing", REQUIRED_ATTRS)
@@ -126,7 +128,7 @@ class TestCheckYamlEntry:
         name = "null" if missing == "name" else "name"
         msg = f"Missing required attributes in query {name}: {set([missing])!r}"
         del attrs[missing.replace("_", "-")]
-        with pytest.raises(SettingsError, match=msg):
+        with pytest.raises(AutomaticEntryError, match=msg):
             check_yaml_entry(**attrs)
 
     @pytest.mark.parametrize("missing", permutations(REQUIRED_ATTRS))
@@ -141,7 +143,7 @@ class TestCheckYamlEntry:
 
         for key in missing:
             del attrs[key.replace("_", "-")]
-        with pytest.raises(SettingsError, match=msg):
+        with pytest.raises(AutomaticEntryError, match=msg):
             check_yaml_entry(**attrs)
 
     def test_ok_zipped_folder(self):
@@ -169,7 +171,7 @@ class TestCheckYamlEntry:
             "zip": True,
         }
 
-        with pytest.raises(SettingsError, match="Must provide 'zipname'"):
+        with pytest.raises(AutomaticEntryError, match="Must provide 'zipname'"):
             check_yaml_entry(**attrs)
 
     def test_ok_unzipped_folder(self):

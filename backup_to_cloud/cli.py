@@ -2,8 +2,8 @@
 
 import click
 
-from .utils import gen_new_token, list_files
 from .main import create_backup
+from .utils import gen_new_token, list_files
 
 CTX_SETTINGS = dict(help_option_names=["-h", "--help"])
 

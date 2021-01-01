@@ -15,8 +15,8 @@ class NoFilesFoundError(BackupError):
     """No files found for a BackupEntry, given the path and filter."""
 
 
-class SettingsError(BackupError):
-    """Maluse of settings."""
+class AutomaticEntryError(BackupError):
+    """Maluse of auto file."""
 
 
 class TokenError(BackupError):

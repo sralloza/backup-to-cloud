@@ -1,11 +1,11 @@
 """Useful functions for the backup_to_cloud package."""
 
-from datetime import datetime
 import mimetypes
-from os import walk
-from pathlib import Path
 import pickle
 import re
+from datetime import datetime
+from os import walk
+from pathlib import Path
 from typing import Any, List, Union
 
 from google.auth.transport.requests import Request
@@ -13,8 +13,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import Resource, build
 
+from .config import settings
 from .exceptions import TokenError
-from .paths import CREDENTIALS_PATH, LOG_PATH, TOKEN_PATH
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 ZIP_MIMETYPE = "application/octet-stream"
@@ -57,22 +57,22 @@ def log(template: Logable, *args: Any):
         message = "ERROR: " + repr(template)
     else:
         message = template % args
-    with LOG_PATH.open("at", encoding="utf-8") as file_handler:
+    with settings.log_path.open("at", encoding="utf-8") as file_handler:
         file_handler.write(time_str + message + "\n")
 
 
 def gen_new_token():
     """Generates a new token."""
 
-    if not CREDENTIALS_PATH.exists():
-        raise FileNotFoundError(CREDENTIALS_PATH.as_posix())
+    if not settings.credentials_path.exists():
+        raise FileNotFoundError(settings.credentials_path.as_posix())
 
     flow = InstalledAppFlow.from_client_secrets_file(
-        CREDENTIALS_PATH.as_posix(), SCOPES
+        settings.credentials_path.as_posix(), SCOPES
     )
     creds = flow.run_local_server(port=0)
 
-    TOKEN_PATH.write_bytes(pickle.dumps(creds))
+    settings.token_path.write_bytes(pickle.dumps(creds))
 
 
 def get_google_drive_services(creds: Credentials = None) -> Resource:
@@ -103,20 +103,20 @@ def get_creds_from_token() -> Credentials:
         Credentials: credentials for google drive.
     """
 
-    if not TOKEN_PATH.exists():
-        exc = TokenError(f"{TOKEN_PATH.as_posix()!r} doesn't exist")
+    if not settings.token_path.exists():
+        exc = TokenError(f"{settings.token_path.as_posix()!r} doesn't exist")
         log(exc)
         raise exc
 
-    creds = pickle.loads(TOKEN_PATH.read_bytes())
+    creds = pickle.loads(settings.token_path.read_bytes())
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
             log("Token updated (expires %s)", creds.expiry)
-            TOKEN_PATH.write_bytes(pickle.dumps(creds))
+            settings.token_path.write_bytes(pickle.dumps(creds))
         else:
-            exc = TokenError(f"Invalid token: {TOKEN_PATH.as_posix()!r}")
+            exc = TokenError(f"Invalid token: {settings.token_path.as_posix()!r}")
             log(exc)
             raise exc
 

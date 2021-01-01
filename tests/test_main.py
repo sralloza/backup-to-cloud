@@ -3,9 +3,9 @@ from unittest import mock
 
 import pytest
 
-from backup_to_cloud.exceptions import NoFilesFoundError, SettingsError
+from backup_to_cloud.automatic import BackupEntry
+from backup_to_cloud.exceptions import AutomaticEntryError, NoFilesFoundError
 from backup_to_cloud.main import create_backup
-from backup_to_cloud.settings import BackupEntry
 from backup_to_cloud.utils import ZIP_MIMETYPE
 
 
@@ -14,7 +14,9 @@ class TestCreateBackup:
     def mocks(self):
         self.backup_m = mock.patch("backup_to_cloud.main.backup").start()
         self.get_mt_m = mock.patch("backup_to_cloud.main.get_mimetype").start()
-        self.get_settings_m = mock.patch("backup_to_cloud.main.get_settings").start()
+        self.get_autentr_m = mock.patch(
+            "backup_to_cloud.main.get_automatic_entries"
+        ).start()
         self.list_files_m = mock.patch("backup_to_cloud.main.list_files").start()
         self.zipfile_m = mock.patch("backup_to_cloud.main.ZipFile").start()
         self.bytesio_m = mock.patch("backup_to_cloud.main.BytesIO").start()
@@ -26,20 +28,20 @@ class TestCreateBackup:
 
     def test_no_root_path(self):
         entry = BackupEntry("<name>", "single-file", None, "<folder-id>")
-        self.get_settings_m.return_value = [entry]
+        self.get_autentr_m.return_value = [entry]
         self.get_mt_m.return_value = "<mimetype>"
 
         create_backup()
 
         self.backup_m.assert_not_called()
         self.get_mt_m.assert_not_called()
-        self.get_settings_m.assert_called_once_with()
+        self.get_autentr_m.assert_called_once_with()
         self.list_files_m.assert_not_called()
         self.log_m.assert_called_once_with("Excluding entry %r", "<name>")
 
     def test_single_file(self):
         entry = BackupEntry("<name>", "single-file", "/home/file.pdf", "<folder-id>")
-        self.get_settings_m.return_value = [entry]
+        self.get_autentr_m.return_value = [entry]
         self.get_mt_m.return_value = "<mimetype>"
 
         create_backup()
@@ -48,7 +50,7 @@ class TestCreateBackup:
             "/home/file.pdf", "<mimetype>", "<folder-id>"
         )
         self.get_mt_m.assert_called_once_with("/home/file.pdf")
-        self.get_settings_m.assert_called_once_with()
+        self.get_autentr_m.assert_called_once_with()
         self.list_files_m.assert_not_called()
         self.log_m.assert_not_called()
 
@@ -59,12 +61,12 @@ class TestCreateBackup:
         entries = [entry1] * (10 - nulls) + [entry2] * nulls
         random.shuffle(entries)
 
-        self.get_settings_m.return_value = entries
+        self.get_autentr_m.return_value = entries
         self.get_mt_m.return_value = "<mimetype>"
 
         create_backup()
 
-        self.get_settings_m.assert_called_once_with()
+        self.get_autentr_m.assert_called_once_with()
         self.list_files_m.assert_not_called()
 
         if nulls != 10:
@@ -93,16 +95,18 @@ class TestCreateBackup:
                 "root-folder": "<root-folder>",
             }
         )
-        self.get_settings_m.return_value = [entry]
+        self.get_autentr_m.return_value = [entry]
         self.get_mt_m.return_value = "<mimetype>"
 
-        with pytest.raises(SettingsError, match="Invalid EntryType: '<invalid-type>'"):
+        with pytest.raises(
+            AutomaticEntryError, match="Invalid EntryType: '<invalid-type>'"
+        ):
             create_backup()
 
         self.backup_m.assert_not_called()
         self.bytesio_m.assert_not_called()
         self.get_mt_m.assert_not_called()
-        self.get_settings_m.assert_called_once_with()
+        self.get_autentr_m.assert_called_once_with()
         self.list_files_m.assert_not_called()
 
     @pytest.mark.parametrize("use_zip", [True, False])
@@ -115,7 +119,7 @@ class TestCreateBackup:
             zip=use_zip,
             filter="<filter>",
         )
-        self.get_settings_m.return_value = [entry]
+        self.get_autentr_m.return_value = [entry]
         self.list_files_m.return_value = []
 
         with pytest.raises(
@@ -125,7 +129,7 @@ class TestCreateBackup:
 
         self.backup_m.assert_not_called()
         self.get_mt_m.assert_not_called()
-        self.get_settings_m.assert_called_once_with()
+        self.get_autentr_m.assert_called_once_with()
         self.list_files_m.assert_called_once_with("/home/test", "<filter>")
         self.zipfile_m.assert_not_called()
         self.bytesio_m.assert_not_called()
@@ -140,7 +144,7 @@ class TestCreateBackup:
             zip=True,
             zipname=zipname,
         )
-        self.get_settings_m.return_value = [entry]
+        self.get_autentr_m.return_value = [entry]
         self.list_files_m.return_value = [
             "/home/test/doc.pdf",
             "/home/test/proyect/doc.pdf",
@@ -161,14 +165,14 @@ class TestCreateBackup:
 
         self.bytesio_m.assert_called_once_with()
         self.get_mt_m.assert_not_called()
-        self.get_settings_m.assert_called_once_with()
+        self.get_autentr_m.assert_called_once_with()
         self.list_files_m.called_once_with()
 
     def test_multiple_no_zip(self):
         entry = BackupEntry(
             "<name>", "multiple-files", "/home/test", "<folder-id>", zip=False
         )
-        self.get_settings_m.return_value = [entry]
+        self.get_autentr_m.return_value = [entry]
         self.get_mt_m.return_value = "<mimetype>"
         self.list_files_m.return_value = [
             "/home/test/doc.pdf",
@@ -187,5 +191,5 @@ class TestCreateBackup:
             self.get_mt_m.assert_any_call(file)
 
         self.bytesio_m.assert_not_called()
-        self.get_settings_m.assert_called_once_with()
+        self.get_autentr_m.assert_called_once_with()
         self.list_files_m.called_once_with()

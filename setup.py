@@ -12,8 +12,8 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "backup-to-cloud=backup_to_cloud.main:main",
-            "btc=backup_to_cloud.main:main",
+            "backup-to-cloud=backup_to_cloud.cli:main",
+            "btc=backup_to_cloud.cli:main",
         ],
     },
     install_requires=requirements

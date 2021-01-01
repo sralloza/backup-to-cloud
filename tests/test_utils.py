@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from backup_to_cloud.exceptions import SettingsError, TokenError
+from backup_to_cloud.exceptions import AutomaticEntryError, TokenError
 from backup_to_cloud.utils import (
     SCOPES,
     ZIP_MIMETYPE,
@@ -29,7 +29,7 @@ class TestLog:
     @pytest.fixture(autouse=True)
     def mocks(self):
         self.dt_m = mock.patch("backup_to_cloud.utils.datetime").start()
-        self.log_path_m = mock.patch("backup_to_cloud.utils.LOG_PATH").start()
+        self.settings_m = mock.patch("backup_to_cloud.utils.settings").start()
 
         yield
         mock.patch.stopall()
@@ -38,7 +38,7 @@ class TestLog:
         None,
         ValueError("Invalid value"),
         TokenError("Invalid token"),
-        SettingsError("Invalid settings"),
+        AutomaticEntryError("Invalid settings"),
     )
 
     @pytest.mark.parametrize("exc", exceptions)
@@ -52,8 +52,8 @@ class TestLog:
             msg = "[<datetime>] this is 100% 'really' important"
 
         self.dt_m.now.return_value.strftime.assert_called_once_with("%Y-%m-%d %H:%M:%S")
-        self.log_path_m.open.assert_called_once_with("at", encoding="utf-8")
-        file_handler = self.log_path_m.open.return_value
+        self.settings_m.log_path.open.assert_called_once_with("at", encoding="utf-8")
+        file_handler = self.settings_m.log_path.open.return_value
         file_handler.__enter__.assert_called_once()
         file_handler.__enter__.return_value.write.assert_called_once_with(msg + "\n")
         file_handler.__exit__.assert_called_once()
@@ -64,18 +64,17 @@ class TestGenNewToken:
     def mocks(self):
         secrets_path = "backup_to_cloud.utils.InstalledAppFlow.from_client_secrets_file"
         self.fcsf_m = mock.patch(secrets_path).start()
-        self.creds_path_m = mock.patch("backup_to_cloud.utils.CREDENTIALS_PATH").start()
-        self.scopes_m = mock.patch("backup_to_cloud.utils.SCOPES").start()
-        self.token_path_m = mock.patch("backup_to_cloud.utils.TOKEN_PATH").start()
         self.pkl_dumps_m = mock.patch("backup_to_cloud.utils.pickle.dumps").start()
+        self.scopes_m = mock.patch("backup_to_cloud.utils.SCOPES").start()
+        self.settings_m = mock.patch("backup_to_cloud.utils.settings").start()
 
         yield
         mock.patch.stopall()
 
     @pytest.mark.parametrize("exists", [True, False])
     def test_gen_new_token(self, exists):
-        self.creds_path_m.exists.return_value = exists
-        self.creds_path_m.as_posix.return_value = "<creds-path>"
+        self.settings_m.credentials_path.exists.return_value = exists
+        self.settings_m.credentials_path.as_posix.return_value = "<creds-path>"
 
         if not exists:
             with pytest.raises(FileNotFoundError, match="<creds-path>"):
@@ -86,13 +85,13 @@ class TestGenNewToken:
         gen_new_token()
 
         self.fcsf_m.assert_called_once_with(
-            self.creds_path_m.as_posix.return_value, self.scopes_m
+            self.settings_m.credentials_path.as_posix.return_value, self.scopes_m
         )
         self.fcsf_m.return_value.run_local_server.assert_called_once_with(port=0)
         flow = self.fcsf_m.return_value.run_local_server.return_value
 
         self.pkl_dumps_m.assert_called_once_with(flow)
-        self.token_path_m.write_bytes.assert_called_once_with(
+        self.settings_m.token_path.write_bytes.assert_called_once_with(
             self.pkl_dumps_m.return_value
         )
 
@@ -114,14 +113,14 @@ def test_get_google_drive_services(build_m, gcft_m, creds):
 class TestGetCredsFromToken:
     @pytest.fixture(autouse=True)
     def mocks(self):
-        self.token_path_m = mock.patch("backup_to_cloud.utils.TOKEN_PATH").start()
+        self.settings_m = mock.patch("backup_to_cloud.utils.settings").start()
         self.pkl_loads_m = mock.patch("backup_to_cloud.utils.pickle.loads").start()
         self.pkl_dumps_m = mock.patch("backup_to_cloud.utils.pickle.dumps").start()
         self.log_m = mock.patch("backup_to_cloud.utils.log").start()
         self.req_m = mock.patch("backup_to_cloud.utils.Request").start()
 
-        self.token_path_m.as_posix.return_value = "<token-path>"
-        self.token_path_m.read_bytes.return_value = b"<pickle-data>"
+        self.settings_m.token_path.as_posix.return_value = "<token-path>"
+        self.settings_m.token_path.read_bytes.return_value = b"<pickle-data>"
 
         yield
 
@@ -144,7 +143,7 @@ class TestGetCredsFromToken:
         return request.param
 
     def test_get_creds_from_token(self, exists, valid, expired, refresh_token):
-        self.token_path_m.exists.return_value = exists
+        self.settings_m.token_path.exists.return_value = exists
         self.pkl_loads_m.return_value.valid = valid
         self.pkl_loads_m.return_value.expired = expired
         self.pkl_loads_m.return_value.refresh_token = refresh_token
