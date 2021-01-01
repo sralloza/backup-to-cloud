@@ -56,7 +56,7 @@ class TestBackupEntry:
 class TestGetAuto:
     @pytest.fixture(autouse=True)
     def mocks(self):
-        self.set_path_m = mock.patch("backup_to_cloud.automatic.AUTOMATIC_PATH").start()
+        self.settings_m = mock.patch("backup_to_cloud.automatic.settings").start()
         self.check_m = mock.patch("backup_to_cloud.automatic.check_yaml_entry").start()
         self.be_m = mock.patch("backup_to_cloud.automatic.BackupEntry").start()
         yield
@@ -64,7 +64,7 @@ class TestGetAuto:
 
     def test_get_auto(self):
         self.check_m.return_value = {"a": 1, "b": 2, "c": 3}
-        self.set_path_m.read_text.return_value = (
+        self.settings_m.automatic_path.read_text.return_value = (
             "name1:\n  type: <type1>\n  zip: true\n  root-path: <path1>\n  "
             "zipname: <zipname1>\n  cloud-folder-id: <folder-id1>\n  filter:"
             " .\n\nname2:\n  type: <type2>\n  zip: false\n  root-path: "

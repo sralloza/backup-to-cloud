@@ -5,8 +5,8 @@ from typing import Dict, List
 
 from ruamel.yaml import YAML
 
+from .config import settings
 from .exceptions import AutomaticEntryError
-from .paths import AUTOMATIC_PATH
 
 
 class EntryType(Enum):
@@ -85,7 +85,7 @@ def get_automatic_entries() -> List[BackupEntry]:
         List[BackupEntry]: backup entries parsed.
     """
 
-    automatic_entries_dict = YAML(typ="safe").load(AUTOMATIC_PATH.read_text())
+    automatic_entries_dict = YAML(typ="safe").load(settings.automatic_path.read_text())
 
     entries = []
     for name, yaml_entry in automatic_entries_dict.items():
