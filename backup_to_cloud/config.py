@@ -9,7 +9,7 @@ from pydantic.types import DirectoryPath, FilePath
 
 class Settings(BaseSettings):
     """Base settings of the application."""
-    
+
     root_path: DirectoryPath
     credentials_path: Optional[FilePath]
 

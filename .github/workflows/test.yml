@@ -20,9 +20,15 @@ jobs:
         pip install black pytest pytest-cov
         pip install -r requirements.txt
         pip install -e .
+    - name: Create credentials file
+      run: |
+        mkdir /tmp/btc
+        touch /tmp/btc/credentials.json
     - name: Test with pytest
       run: |
         pytest -vv -l --cov=./ --cov-report=xml
+      env:
+        BTC_ROOT_PATH: /tmp/btc
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
