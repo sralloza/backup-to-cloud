@@ -5,8 +5,8 @@ from typing import Dict, List
 
 from ruamel.yaml import YAML
 
-from .exceptions import SettingsError
-from .paths import SETTINGS_PATH
+from .exceptions import AutomaticEntryError
+from .paths import AUTOMATIC_PATH
 
 
 class EntryType(Enum):
@@ -78,17 +78,17 @@ class BackupEntry:
         return f"BackupEntry(attrs={attrs})"
 
 
-def get_settings() -> List[BackupEntry]:
-    """Parses the settings file and returns a list of BackupEntries.
+def get_automatic_entries() -> List[BackupEntry]:
+    """Parses the automatic entries file and returns a list of BackupEntries.
 
     Returns:
         List[BackupEntry]: backup entries parsed.
     """
 
-    settings_dict = YAML(typ="safe").load(SETTINGS_PATH.read_text())
+    automatic_entries_dict = YAML(typ="safe").load(AUTOMATIC_PATH.read_text())
 
     entries = []
-    for name, yaml_entry in settings_dict.items():
+    for name, yaml_entry in automatic_entries_dict.items():
         result = check_yaml_entry(name=name, **yaml_entry)
         entries.append(BackupEntry(**result))
     return entries
@@ -102,11 +102,11 @@ def check_yaml_entry(**yaml_entry: Dict[str, str]) -> Dict[str, str]:
             that needs to be parsed.
 
     Raises:
-        SettingsError: if any attribute is not defined.
-        SettingsError: if a required attribute is not defined.
+        AutomaticEntryError: if any attribute is not defined.
+        AutomaticEntryError: if a required attribute is not defined.
         TypeError: if the entry type is invalid.
         TypeError: if any attribute it's not the type it should be.
-        SettingsError: if entry type is multiple-files, zip is True
+        AutomaticEntryError: if entry type is multiple-files, zip is True
             and zipname is not defiend.
 
     Returns:
@@ -119,7 +119,7 @@ def check_yaml_entry(**yaml_entry: Dict[str, str]) -> Dict[str, str]:
         key = key.replace("-", "_")
         if key not in VALID_ATTRS:
             msg = f"{key!r} is not a valid attribute {VALID_ATTRS}"
-            raise SettingsError(msg)
+            raise AutomaticEntryError(msg)
 
         result[key] = value
         keys.add(key)
@@ -128,7 +128,7 @@ def check_yaml_entry(**yaml_entry: Dict[str, str]) -> Dict[str, str]:
         missing = REQUIRED_ATTRS - keys
         name = result.get("name", "null")
         msg = f"Missing required attributes in query {name}: {missing!r}"
-        raise SettingsError(msg)
+        raise AutomaticEntryError(msg)
 
     if result["type"] not in VALID_TYPES:
         valid_types = ", ".join(VALID_TYPES)
@@ -156,6 +156,6 @@ def check_yaml_entry(**yaml_entry: Dict[str, str]) -> Dict[str, str]:
 
     if result.get("zip"):
         if not result.get("zipname"):
-            raise SettingsError("Must provide 'zipname' if zip=True")
+            raise AutomaticEntryError("Must provide 'zipname' if zip=True")
 
     return result

@@ -1,10 +1,10 @@
 import pytest
 
 from backup_to_cloud.exceptions import (
+    AutomaticEntryError,
     BackupError,
     MultipleFilesError,
     NoFilesFoundError,
-    SettingsError,
     TokenError,
 )
 
@@ -42,15 +42,15 @@ class TestNoFilesFoundError:
             raise NoFilesFoundError
 
 
-class TestSettingsError:
+class TestAutomaticEntryError:
     def test_inheritance(self):
-        exc = SettingsError()
-        assert isinstance(exc, SettingsError)
+        exc = AutomaticEntryError()
+        assert isinstance(exc, AutomaticEntryError)
         assert isinstance(exc, BackupError)
 
     def test_raises(self):
-        with pytest.raises(SettingsError):
-            raise SettingsError
+        with pytest.raises(AutomaticEntryError):
+            raise AutomaticEntryError
 
 
 class TestTokenError:

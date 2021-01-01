@@ -4,8 +4,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import Union
 
-from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.discovery import Resource
+from googleapiclient.http import MediaIoBaseUpload
 
 from .exceptions import MultipleFilesError
 from .utils import get_google_drive_services, log

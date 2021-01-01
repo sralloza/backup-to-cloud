@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from backup_to_cloud.exceptions import SettingsError, TokenError
+from backup_to_cloud.exceptions import AutomaticEntryError, TokenError
 from backup_to_cloud.utils import (
     SCOPES,
     ZIP_MIMETYPE,
@@ -38,7 +38,7 @@ class TestLog:
         None,
         ValueError("Invalid value"),
         TokenError("Invalid token"),
-        SettingsError("Invalid settings"),
+        AutomaticEntryError("Invalid settings"),
     )
 
     @pytest.mark.parametrize("exc", exceptions)

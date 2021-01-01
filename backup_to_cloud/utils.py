@@ -1,11 +1,11 @@
 """Useful functions for the backup_to_cloud package."""
 
-from datetime import datetime
 import mimetypes
-from os import walk
-from pathlib import Path
 import pickle
 import re
+from datetime import datetime
+from os import walk
+from pathlib import Path
 from typing import Any, List, Union
 
 from google.auth.transport.requests import Request

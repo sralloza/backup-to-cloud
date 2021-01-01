@@ -4,17 +4,29 @@ from io import BytesIO
 from pathlib import Path
 from zipfile import ZipFile
 
-from .exceptions import NoFilesFoundError, SettingsError
-from .settings import EntryType, get_settings
+from .automatic import EntryType, get_automatic_entries
+from .exceptions import AutomaticEntryError, NoFilesFoundError
 from .upload import backup
 from .utils import ZIP_MIMETYPE, get_mimetype, list_files, log
 
 
-def create_backup():
-    """Real main function."""
-    settings = get_settings()
+def create_backup(dry_run=False):
+    """Real main function.
 
-    for entry in settings:
+    Args:
+        dry_run (bool, optional): if True, it won't upload anything to google
+            drive. Designed to check settings. Defaults to True.
+
+    Raises:
+        FileNotFoundError: if a file is not found in the filesystem.
+        NoFilesFoundError: if the system is supposed to find multiple
+            files and it doesn't find any files.
+
+    """
+
+    automatic_entries = get_automatic_entries()
+
+    for entry in automatic_entries:
         if entry.root_path is None:
             log("Excluding entry %r", entry.name)
             continue
@@ -56,4 +68,4 @@ def create_backup():
             mimetype = get_mimetype(entry.root_path)
             backup(entry.root_path, mimetype, entry.folder)
         else:
-            raise SettingsError(f"Invalid EntryType: {entry.type!r}")
+            raise AutomaticEntryError(f"Invalid EntryType: {entry.type!r}")

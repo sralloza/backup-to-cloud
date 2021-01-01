@@ -4,7 +4,7 @@ from backup_to_cloud.paths import (
     CREDENTIALS_PATH,
     LOG_PATH,
     ROOT_PATH,
-    SETTINGS_PATH,
+    AUTOMATIC_PATH,
     TOKEN_PATH,
 )
 
@@ -30,9 +30,9 @@ def test_log_path():
 
 
 def test_settings_path():
-    assert isinstance(SETTINGS_PATH, Path)
-    assert SETTINGS_PATH.relative_to(ROOT_PATH) == Path(SETTINGS_PATH.name)
-    assert SETTINGS_PATH.suffix == ".yml"
+    assert isinstance(AUTOMATIC_PATH, Path)
+    assert AUTOMATIC_PATH.relative_to(ROOT_PATH) == Path(AUTOMATIC_PATH.name)
+    assert AUTOMATIC_PATH.suffix == ".yml"
 
 
 def test_token_path():
