@@ -3,7 +3,7 @@
 <p align="center">
 <a href="https://github.com/sralloza/backup-to-cloud/actions"><img alt="Actions Status" src="https://github.com/sralloza/backup-to-cloud/workflows/test/badge.svg"></a>
 <a href="https://github.com/sralloza/backup-to-cloud/actions"><img alt="Actions Status" src="https://github.com/sralloza/backup-to-cloud/workflows/lint-black/badge.svg"></a>
-<a href="https://github.com/sralloza/backup-to-cloud/actions"><img alt="Actions Status" src="https://github.com/sralloza/backup-to-cloud/workflows/lint-pylint/badge.svg"></a>
+<!-- <a href="https://github.com/sralloza/backup-to-cloud/actions"><img alt="Actions Status" src="https://github.com/sralloza/backup-to-cloud/workflows/lint-pylint/badge.svg"></a> -->
 <a href="https://codecov.io/gh/sralloza/backup-to-cloud">
   <img src="https://codecov.io/gh/sralloza/backup-to-cloud/branch/master/graph/badge.svg" />
 </a>
@@ -15,16 +15,24 @@ Simple app designed to upload backups to google drive. Settings are handled by a
 
 <h3>Contents:</h3>
 
+- [Enviroment settings](#enviroment-settings)
 - [Settings](#settings)
   - [Examples](#examples)
   - [Check regex](#check-regex)
   - [Common filters](#common-filters)
   - [Get folder's id](#get-folders-id)
 - [Credentials](#credentials)
+- [Other uses](#other-uses)
+
+## Enviroment settings
+
+In order to use the library you must set the enviroment variable `BTC_ROOT_PATH` to a existing folder.
+Said folder must contain the [credentials](#credentials) in the file `credentials.json`. The `logs` and `token`
+will be stored in that folder.
 
 ## Settings
 
-Settings must be placed in `.settings.yml`, written in [YAML](https://yaml.org/), in the root dir.
+Settings must be placed in `.automatic.yml`, written in [YAML](https://yaml.org/), in the root dir.
 
 Each entry must be declared like this:
 
@@ -89,7 +97,7 @@ If `root-path` contains spaces, quotes (`"/path with/spaces"`) must be used.
 
 ### Common filters
 
-One of the usages of the regex filter is filter by extension. In order to do so, write `filter=ext$` (where `ext` is the extension) in the settings file. The dollar symbol (_\$_) means the end of the line. Without it, a file named `/folder/something.ext/invalid.pdf` would match the filter.
+One of the usages of the regex filter is filter by extension. In order to do so, write `filter=ext$` (where `ext` is the extension) in the automatic file. The dollar symbol (_\$_) means the end of the line. Without it, a file named `/folder/something.ext/invalid.pdf` would match the filter.
 
 ### Get folder's id
 
@@ -109,3 +117,21 @@ python launcher.py gen-token
 ```
 
 And that's all. You don't need to care about loosing data anymore!
+
+## Other uses
+
+You can also use this library to upload a file to google drive:
+
+```python
+from backup_to_cloud.upload import backup
+
+
+file_data = "drive_document.pdf"
+folder_id = "kb0T7lBnqADunAhsjy2Txhs9Qjoe1zmUu"
+mimetype = "application/pdf"
+filename = "real_document.pdf"
+
+response = backup(file_data, mimetype, folder_id, filename)
+print(response)
+# {'kind': 'drive#file', 'id': '1QMFjfQdy_2defFdJM5vojuAjXbfs6qp51', 'name': 'real_document.pdf', 'mimeType': 'application/pdf'}
+```

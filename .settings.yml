@@ -1,0 +1,35 @@
+# test:
+#   type: single-file
+#   # root-path: D:/.scripts/backup-to-cloud/.automatic.yml
+#   root-path: D:/sistema/desktop/logs.zip
+#   filter: "*.pdf"
+
+vcm-settings:
+  type: single-file
+  root-path: C:/Users/srall/vcm-settings.toml
+  cloud-folder-id: 1WMrN2mvaShaUnNHH6XuctnsGePoqlrqv
+
+apache-config:
+  type: multiple-files
+  zip: true
+  root-path: /etc/apache2/sites-available
+  filter: .conf$
+  zipname: sites-available.zip
+  cloud-folder-id: 1iMBCIOtVuGRXVhxD1lFVPZdcQ0mL5jMz
+
+# vcm-database:
+#   type: single-file
+#   root-path: /home/sralloza/vcm-data/links.db
+#   cloud-folder-id: 1hrW_dUEPt-YuhErDxOj-uRkGA5u3jMaA
+
+# backup-to-cloud-settings:
+#   type: single-file
+#   root-path: /home/sralloza/backup-data/.automatic.yml
+#   cloud-folder-id: 13JB1IwMviCEeG8LM4KWcpf-1SPSqRs1D
+
+# logs:
+#   type: multiple-files
+#   root-path: /srv/logs
+#   zip: true
+#   zipname: logs.zip
+#   cloud-folder-id: 1JzzG8E73iawWGpJHFSKQs2z2reGsvqEP

@@ -1,4 +1,4 @@
-"""Handles the settings and the settings file (.settings.yml)."""
+"""Handles the automatic file (.automatic.yml)."""
 
 from enum import Enum
 from typing import Dict, List
@@ -31,7 +31,7 @@ VALID_ATTRS = set(ATTRS_TYPES.keys())
 
 
 class BackupEntry:
-    """Represents an entry in .settings.yml
+    """Represents an entry in .automatic.yml
 
     Args:
         name (str): the name of the entry. It is irrelevant, only representative.
