@@ -118,7 +118,9 @@ class TestCheckYamlEntry:
 
     def test_invalid_attrs(self, attrs):
         attrs["invalid"] = True
-        with pytest.raises(AutomaticEntryError, match=r"'invalid' is not a valid attribute"):
+        with pytest.raises(
+            AutomaticEntryError, match=r"'invalid' is not a valid attribute"
+        ):
             check_yaml_entry(**attrs)
 
     @pytest.mark.parametrize("missing", REQUIRED_ATTRS)

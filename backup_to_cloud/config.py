@@ -4,10 +4,12 @@ from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseSettings, validator
-from pydantic.types import DirectoryPath, FilePath, conint
+from pydantic.types import DirectoryPath, FilePath
 
 
 class Settings(BaseSettings):
+    """Base settings of the application."""
+    
     root_path: DirectoryPath
     credentials_path: Optional[FilePath]
 

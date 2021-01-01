@@ -3,9 +3,9 @@ from unittest import mock
 
 import pytest
 
-from backup_to_cloud.exceptions import NoFilesFoundError, AutomaticEntryError
-from backup_to_cloud.main import create_backup
 from backup_to_cloud.automatic import BackupEntry
+from backup_to_cloud.exceptions import AutomaticEntryError, NoFilesFoundError
+from backup_to_cloud.main import create_backup
 from backup_to_cloud.utils import ZIP_MIMETYPE
 
 
@@ -14,7 +14,9 @@ class TestCreateBackup:
     def mocks(self):
         self.backup_m = mock.patch("backup_to_cloud.main.backup").start()
         self.get_mt_m = mock.patch("backup_to_cloud.main.get_mimetype").start()
-        self.get_autentr_m = mock.patch("backup_to_cloud.main.get_automatic_entries").start()
+        self.get_autentr_m = mock.patch(
+            "backup_to_cloud.main.get_automatic_entries"
+        ).start()
         self.list_files_m = mock.patch("backup_to_cloud.main.list_files").start()
         self.zipfile_m = mock.patch("backup_to_cloud.main.ZipFile").start()
         self.bytesio_m = mock.patch("backup_to_cloud.main.BytesIO").start()

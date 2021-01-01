@@ -2,11 +2,10 @@
 
 from unittest import mock
 
-from click.testing import CliRunner
 import pytest
+from click.testing import CliRunner
 
-from backup_to_cloud.cli import main
-from backup_to_cloud.cli import cli
+from backup_to_cloud.cli import cli, main
 
 
 @pytest.mark.parametrize("arg", ["-h", "--help"])

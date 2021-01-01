@@ -2,9 +2,9 @@ import os
 from pathlib import Path
 
 import pytest
+from pydantic import DirectoryPath, FilePath, ValidationError
+
 from backup_to_cloud.config import Settings, settings
-from pydantic import ValidationError
-from pydantic.types import DirectoryPath, FilePath
 
 
 def test_settings_fields():

@@ -10,12 +10,8 @@ from .upload import backup
 from .utils import ZIP_MIMETYPE, get_mimetype, list_files, log
 
 
-def create_backup(dry_run=False):
+def create_backup():
     """Real main function.
-
-    Args:
-        dry_run (bool, optional): if True, it won't upload anything to google
-            drive. Designed to check settings. Defaults to True.
 
     Raises:
         FileNotFoundError: if a file is not found in the filesystem.
